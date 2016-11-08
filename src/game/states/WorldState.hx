@@ -23,15 +23,13 @@ class WorldState extends State {
 
     var s :ParticleSystem;
     var fixParticle :Particle;
-    var p_free :Array<Particle>;
-    var p_fixed :Array<Particle>;
-    var attractor :Particle;
+    var particles :Array<Particle>;
 
     var nodes :Map<core.models.Graph.Node<String>, luxe.Visual>;
 
     public function new() {
         super({ name: StateId });
-        p_free = [];
+        particles = [];
     }
 
     override function init() {
@@ -74,69 +72,10 @@ class WorldState extends State {
             }
         }
 
-        // setup_test1();
-        // setup_test2();
-        test_setup3();
+        setup_particles();
     }
 
-    function setup_test1() {
-        s = new ParticleSystem( new Vector3D(0, 0, 0), 0.2 );
-        s.setIntegrator(ParticleSystem.MODIFIED_EULER);
-
-        attractor = s.makeParticle(1, new Vector3D(300,300,0));
-        attractor.makeFixed();
-
-        var sx = 110;
-        var sy = 50;
-        var sp = 50;
-
-       p_free = [];
-       p_fixed = [];
-
-        for (i in 0 ...5) {
-            for (j in 0 ... 5) {
-                var a = s.makeParticle(.8,new Vector3D(sx+j*sp, sy+i*sp, 0));
-                a.makeFixed();
-                var b = s.makeParticle(.8,new Vector3D(sx+j*sp, sy+i*sp, 0));
-
-                p_fixed.push(a);
-                p_free.push(b);
-
-                s.makeSpring(a, b, .1, .01, 0);
-                s.makeAttraction(attractor, b, 1, 100);
-            }
-        }
-    }
-
-    function setup_test2() {
-        var springConst :Float = 0.05; // 0.1
-		var damping     :Float = 0.8; // 0.08
-		var repelConst  :Float = -5000;
-
-        p_free = [];
-
-		s = new ParticleSystem(new Vector3D(0, 0, 0), .2);
-
-		fixParticle = s.makeParticle(.8, new Vector3D(0, 0, 0));
-		fixParticle.makeFixed();
-
-        var mainSpring:Spring;
-        var numberOfPArticles = 80;
-		for (i in 0...numberOfPArticles) {
-			p_free.push( s.makeParticle(.8, new Vector3D(Math.random()*300 - 150, Math.random()*300, Math.random()*30)) );
-			mainSpring = s.makeSpring(fixParticle, p_free[i], springConst, damping, 150);
-			if (i > 0)  {
-				var counter = i - 1;
-				while (counter >= 0) {
-					s.makeAttraction(p_free[i], p_free[counter], repelConst, 20);
-                    counter--;
-				}
-
-			}
-		}
-    }
-
-    function test_setup3() {
+    function setup_particles() {
         s = new ParticleSystem(new Vector3D(0, 0, 0), 0.1);
         // Runge-Kutta, the default integrator is stable and snappy,
          // but slows down quickly as you add particles.
@@ -144,51 +83,51 @@ class WorldState extends State {
 
          // Try this to see how Euler is faster, but borderline unstable.
          // 500 particles = 24 fps on my machine
-         //s.setIntegrator( ParticleSystem.MODIFIED_EULER );
+        //  s.setIntegrator( ParticleSystem.MODIFIED_EULER );
 
          // Now try this to see make it more damped, but stable.
-         //s.setDrag( 0.2 );
+        //  s.setDrag( 0.2 );
 
          initialize();
     }
 
-    var centroidX :Float = 0.0;
-    var centroidY :Float = 0.0;
-    var scale :Float = 1.0;
+    // var centroidX :Float = 0.0;
+    // var centroidY :Float = 0.0;
+    // var scale :Float = 1.0;
 
     var NODE_SIZE :Float = 10;
     var EDGE_LENGTH :Float = 50;
     var EDGE_STRENGTH :Float = 0.2;
     var SPACER_STRENGTH :Float = 1000;
 
-    function updateCentroid() {
-        var xMax = Math.NEGATIVE_INFINITY;
-        var xMin = Math.POSITIVE_INFINITY;
-        var yMin = Math.POSITIVE_INFINITY;
-        var yMax = Math.NEGATIVE_INFINITY;
-
-        for (p in p_free) {
-            xMax = Math.max(xMax, p.position.x);
-            xMin = Math.min(xMin, p.position.x);
-            yMin = Math.min(yMin, p.position.y);
-            yMax = Math.max(yMax, p.position.y);
-        }
-        var deltaX = xMax-xMin;
-        var deltaY = yMax-yMin;
-
-        centroidX = xMin + 0.5 * deltaX;
-        centroidY = yMin + 0.5 * deltaY;
-
-        if (deltaY > deltaX ) {
-            scale = Luxe.screen.height / (deltaY + 50);
-        } else {
-            scale = Luxe.screen.width / (deltaX + 50);
-        }
-    }
+    // function updateCentroid() {
+    //     var xMax = Math.NEGATIVE_INFINITY;
+    //     var xMin = Math.POSITIVE_INFINITY;
+    //     var yMin = Math.POSITIVE_INFINITY;
+    //     var yMax = Math.NEGATIVE_INFINITY;
+    //
+    //     for (p in particles) {
+    //         xMax = Math.max(xMax, p.position.x);
+    //         xMin = Math.min(xMin, p.position.x);
+    //         yMin = Math.min(yMin, p.position.y);
+    //         yMax = Math.max(yMax, p.position.y);
+    //     }
+    //     var deltaX = xMax - xMin;
+    //     var deltaY = yMax - yMin;
+    //
+    //     centroidX = xMin + 0.5 * deltaX;
+    //     centroidY = yMin + 0.5 * deltaY;
+    //
+    //     if (Luxe.screen.height / deltaY < Luxe.screen.width / deltaX) {
+    //         scale = Luxe.screen.height / (deltaY + 50);
+    //     } else {
+    //         scale = Luxe.screen.width / (deltaX + 50);
+    //     }
+    // }
 
     function addSpacersToNode(p :Particle, r :Particle) {
-        for (q in p_free) {
-            if ( p != q && p != r ) {
+        for (q in particles) {
+            if (p != q && p != r) {
                 s.makeAttraction( p, q, -SPACER_STRENGTH, 20 );
             }
         }
@@ -200,20 +139,21 @@ class WorldState extends State {
 
     function initialize() {
         s.clear();
-        s.makeParticle();
+        addNode();
     }
 
     function addNode() {
         var p :Particle = s.makeParticle();
-        var q :Particle = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
-        while ( q == p ) {
-            q = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
+        if (particles.length > 0) {
+            var q :Particle = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
+            while (q == p) {
+                q = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
+            }
+            addSpacersToNode( p, q );
+            makeEdgeBetween( p, q );
+            p.position = new Vector3D(q.position.x -1 + 2 * Math.random(), q.position.y -1 + 2 * Math.random(), 0);
         }
-        addSpacersToNode( p, q );
-        makeEdgeBetween( p, q );
-        p.position = new Vector3D(q.position.x -1 + 2 * Math.random(), q.position.y -1 + 2 * Math.random(), 0);
-
-        p_free.push(p);
+        particles.push(p);
     }
 
     override function onenter(_) {
@@ -234,9 +174,9 @@ class WorldState extends State {
     }
 
     override function onrender() {
-        // if (p_free.length > 0) trace(p_free[0]);
+        // if (particles.length > 0) trace(particles[0]);
         // Luxe.draw.poly({
-        //     points: [ for (p in p_free) new Vector(p.position.x, p.position.y) ],
+        //     points: [ for (p in particles) new Vector(p.position.x, p.position.y) ],
         //     solid: false,
         //     immediate: true
         // });
@@ -253,13 +193,15 @@ class WorldState extends State {
             });
         }
 
-        for (p in p_free) {
-            Luxe.draw.circle({
+        for (p in particles) {
+            Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
                 r: 10,
-                immediate: true,
-                color: new Color(1, 1, 1, 1)
+                sides: 6,
+                color: new Color(1, 0, 1, 1),
+                solid: true,
+                immediate: true
             });
         }
         /*
@@ -273,13 +215,16 @@ class WorldState extends State {
         //}
         */
 
-        if (p_free.length > 0) {
-            Luxe.camera.pos = new Vector(p_free[0].position.x - Luxe.screen.w / 2, p_free[0].position.y - Luxe.screen.h / 2);
+        if (particles.length > 0) {
+            Luxe.camera.pos = new Vector(particles[0].position.x - Luxe.screen.width / 2, particles[0].position.y - Luxe.screen.height / 2);
+
+            // TODO: should be fixed to the current node
+            // Luxe.camera.pos = new Vector(centroidX - Luxe.screen.width / 2, centroidY - Luxe.screen.height / 2);
+            // Luxe.camera.zoom = scale;
         }
     }
     override function onmousemove(event :MouseEvent) {
-        // attractor.position.x = event.x;
-        // attractor.position.y = event.y;
+
     }
 
     override function onmousedown(event :MouseEvent) {
@@ -288,25 +233,6 @@ class WorldState extends State {
 
     override function update(dt :Float) {
         s.tick(dt * 10); // Hack to multiply dt
-        if (s.numberOfParticles() > 1) updateCentroid();
+        // if (s.numberOfParticles() > 1) updateCentroid();
     }
-
-    // function drawNetwork() {
-    //   for (p in p_free) {
-    //       ellipse( v.position.x, v.position.y, NODE_SIZE, NODE_SIZE );
-    //   }
-    //
-    //   // draw edges
-    //   stroke( 0 );
-    //   beginShape( LINES );
-    //   for ( int i = 0; i < s.numberOfSprings(); ++i )
-    //   {
-    //     Spring e = s.getSpring( i );
-    //     Particle a = e.getOneEnd();
-    //     Particle b = e.getTheOtherEnd();
-    //     vertex( a.position.x, a.position.y );
-    //     vertex( b.position.x, b.position.y );
-    //   }
-    //   endShape();
-    // }
 }
