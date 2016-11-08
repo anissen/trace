@@ -1,0 +1,73 @@
+{
+    luxe:{
+        window: {
+            title: 'hackjam',
+            width: 960,
+            height: 640,
+            fullscreen: false,
+            resizable: true,
+            borderless: false
+        }
+    },
+
+    project : {
+        name : 'hackjam',
+        version : '0.1.0',
+        author : 'Anders Nissen',
+
+        app : {
+            name : 'hackjam',
+            package : 'com.andersnissen.hackjam',
+            main : 'Main',
+            mobile: {
+                orientation: 'portrait'
+            }
+        },
+
+        build : {
+            number: 1,
+
+            "comment" : "flow build android --d android_release",
+            dependencies : {
+                luxe: '*',
+                dconsole: '*'
+            },
+            defines : [
+                'absolute-path'
+            ],
+            files: {
+                keystore: 'indiedev.keystore => project/indiedev.keystore',
+                passwords : 'passwords.sensitive.properties => project/passwords.sensitive.properties'
+            },
+        },
+
+        files : {
+            config : 'config.json',
+            assets : 'assets/'
+        }
+    },
+
+    if: {
+        android_release: {
+            app: {
+                mobile: {
+                    android: {
+                        build_type: "release",
+                        keystore_path: "indiedev.keystore",
+                        keystore_alias: "indiedev"
+                    }
+                }
+            },
+
+            build: {
+                defines: ['no_debug_console']
+            }
+        },
+
+        ios: {
+            build: {
+                defines: ['no_debug_console']
+            }
+        }
+    }
+}
