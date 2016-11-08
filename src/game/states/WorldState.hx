@@ -91,39 +91,10 @@ class WorldState extends State {
          initialize();
     }
 
-    // var centroidX :Float = 0.0;
-    // var centroidY :Float = 0.0;
-    // var scale :Float = 1.0;
-
     var NODE_SIZE :Float = 10;
     var EDGE_LENGTH :Float = 50;
     var EDGE_STRENGTH :Float = 0.2;
     var SPACER_STRENGTH :Float = 1000;
-
-    // function updateCentroid() {
-    //     var xMax = Math.NEGATIVE_INFINITY;
-    //     var xMin = Math.POSITIVE_INFINITY;
-    //     var yMin = Math.POSITIVE_INFINITY;
-    //     var yMax = Math.NEGATIVE_INFINITY;
-    //
-    //     for (p in particles) {
-    //         xMax = Math.max(xMax, p.position.x);
-    //         xMin = Math.min(xMin, p.position.x);
-    //         yMin = Math.min(yMin, p.position.y);
-    //         yMax = Math.max(yMax, p.position.y);
-    //     }
-    //     var deltaX = xMax - xMin;
-    //     var deltaY = yMax - yMin;
-    //
-    //     centroidX = xMin + 0.5 * deltaX;
-    //     centroidY = yMin + 0.5 * deltaY;
-    //
-    //     if (Luxe.screen.height / deltaY < Luxe.screen.width / deltaX) {
-    //         scale = Luxe.screen.height / (deltaY + 50);
-    //     } else {
-    //         scale = Luxe.screen.width / (deltaX + 50);
-    //     }
-    // }
 
     function addSpacersToNode(p :Particle, r :Particle) {
         for (q in particles) {
@@ -174,13 +145,6 @@ class WorldState extends State {
     }
 
     override function onrender() {
-        // if (particles.length > 0) trace(particles[0]);
-        // Luxe.draw.poly({
-        //     points: [ for (p in particles) new Vector(p.position.x, p.position.y) ],
-        //     solid: false,
-        //     immediate: true
-        // });
-
         for (i in 0 ... s.numberOfSprings()) {
             var e :Spring = s.getSpring(i);
             var a :Particle = e.getOneEnd();
@@ -204,16 +168,6 @@ class WorldState extends State {
                 immediate: true
             });
         }
-        /*
-        //for (p in p_fixed) {
-            Luxe.draw.circle({
-                pos: new Vector(fixParticle.position.x, fixParticle.position.y),
-                r: 30,
-                immediate: true,
-                color: new Color(0, 0, 1)
-            });
-        //}
-        */
 
         if (particles.length > 0) {
             Luxe.camera.pos = new Vector(particles[0].position.x - Luxe.screen.width / 2, particles[0].position.y - Luxe.screen.height / 2);
@@ -233,6 +187,5 @@ class WorldState extends State {
 
     override function update(dt :Float) {
         s.tick(dt * 10); // Hack to multiply dt
-        // if (s.numberOfParticles() > 1) updateCentroid();
     }
 }
