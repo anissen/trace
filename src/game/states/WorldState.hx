@@ -30,14 +30,19 @@ class WorldState extends State {
     var fixParticle :Particle;
     var particles :Array<Particle>;
 
+    var current :core.models.Graph.Node<String>;
+
     // var nodePairs :Array<NodePair>;
 
     // var nodes :Map<core.models.Graph.Node<String>, luxe.Visual>;
     var nodes :Map<core.models.Graph.Node<String>, Particle>;
 
+    var graph :core.models.Graph<String>;
+
     public function new() {
         super({ name: StateId });
         particles = [];
+        current = null;
     }
 
     override function init() {
@@ -54,7 +59,7 @@ class WorldState extends State {
 
         nodes = new Map();
         // test
-        var graph = core.models.Graph.Test.get_graph();
+        graph = core.models.Graph.Test.get_graph();
         // for (n in graph.get_nodes()) {
         //     var pos = new Vector(Luxe.screen.w * Math.random(), Luxe.screen.h * Math.random());
         //     var node = new luxe.Visual({
@@ -86,6 +91,8 @@ class WorldState extends State {
             var p = add_node();
             particles.push(p);
             nodes[n] = p;
+
+            if (current == null) current = n;
         }
 
         for (n in graph.get_nodes()) {
@@ -159,8 +166,8 @@ class WorldState extends State {
     // }
 
     override function onenter(_) {
-        // Luxe.camera.zoom = 0.10;
-        // luxe.tween.Actuate.tween(Luxe.camera, 1.0, { zoom: 1 });
+        Luxe.camera.zoom = 0.1;
+        luxe.tween.Actuate.tween(Luxe.camera, 5, { zoom: 1 });
 
         // overlay_filter = new Sprite({
         //     pos: Luxe.screen.mid.clone(),
@@ -193,9 +200,9 @@ class WorldState extends State {
             Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
-                r: NODE_SIZE,
+                r: (n == current ? NODE_SIZE * 2 : NODE_SIZE),
                 sides: 6,
-                color: new Color(1, 0, 1, 1),
+                color: (n == current ? new Color(1, 0.2, 0, 1) : new Color(1, 0, 1, 1)),
                 solid: true,
                 immediate: true
             });
@@ -208,13 +215,14 @@ class WorldState extends State {
             });
         }
 
-        if (particles.length > 0) {
-            Luxe.camera.pos = new Vector(particles[0].position.x - Luxe.screen.width / 2, particles[0].position.y - Luxe.screen.height / 2);
-
-            // TODO: should be fixed to the current node
-            // Luxe.camera.pos = new Vector(centroidX - Luxe.screen.width / 2, centroidY - Luxe.screen.height / 2);
-            // Luxe.camera.zoom = scale;
-        }
+        // if (current != null) {
+        //     var p = nodes[current];
+        //     Luxe.camera.focus(new Vector(p.position.x - Luxe.screen.width / 2, p.position.y - Luxe.screen.height / 2));
+        //
+        //     // TODO: should be fixed to the current node
+        //     // Luxe.camera.pos = new Vector(centroidX - Luxe.screen.width / 2, centroidY - Luxe.screen.height / 2);
+        //     // Luxe.camera.zoom = scale;
+        // }
     }
     override function onmousemove(event :MouseEvent) {
 
@@ -222,6 +230,10 @@ class WorldState extends State {
 
     override function onmousedown(event :MouseEvent) {
         // addNode();
+        var links = graph.get_links_for_node(current);
+        current = links[Math.floor(links.length * Math.random())];
+        var p = nodes[current];
+        Luxe.camera.focus(new Vector(p.position.x, p.position.y));
     }
 
     override function update(dt :Float) {
