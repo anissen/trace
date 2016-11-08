@@ -15,6 +15,11 @@ import core.physics.*;
 
 using Lambda;
 
+// typedef NodePair = {
+//     node :core.models.Graph.Node<String>,
+//     particle :Particle
+// };
+
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
 
@@ -25,7 +30,10 @@ class WorldState extends State {
     var fixParticle :Particle;
     var particles :Array<Particle>;
 
-    var nodes :Map<core.models.Graph.Node<String>, luxe.Visual>;
+    // var nodePairs :Array<NodePair>;
+
+    // var nodes :Map<core.models.Graph.Node<String>, luxe.Visual>;
+    var nodes :Map<core.models.Graph.Node<String>, Particle>;
 
     public function new() {
         super({ name: StateId });
@@ -47,32 +55,46 @@ class WorldState extends State {
         nodes = new Map();
         // test
         var graph = core.models.Graph.Test.get_graph();
+        // for (n in graph.get_nodes()) {
+        //     var pos = new Vector(Luxe.screen.w * Math.random(), Luxe.screen.h * Math.random());
+        //     var node = new luxe.Visual({
+        //         pos: new Vector(Luxe.screen.w * Math.random(), Luxe.screen.h * Math.random()),
+        //         geometry: Luxe.draw.circle({ r: 30 })
+        //     });
+        //     new luxe.Text({
+        //         text: n.value,
+        //         color: new Color(0, 0, 0),
+        //         align: center,
+        //         align_vertical: center,
+        //         parent: node
+        //     });
+        //     nodes[n] = node;
+        // }
+        // for (n in graph.get_nodes()) {
+        //     for (l in graph.get_links_for_node(n)) {
+        //         Luxe.draw.line({
+        //             p0: nodes[n].pos,
+        //             p1: nodes[l].pos,
+        //             color: new Color(1, 0, 0)
+        //         });
+        //     }
+        // }
+
+        setup_particles();
+
         for (n in graph.get_nodes()) {
-            var pos = new Vector(Luxe.screen.w * Math.random(), Luxe.screen.h * Math.random());
-            var node = new luxe.Visual({
-                pos: new Vector(Luxe.screen.w * Math.random(), Luxe.screen.h * Math.random()),
-                geometry: Luxe.draw.circle({ r: 30 })
-            });
-            new luxe.Text({
-                text: n.value,
-                color: new Color(0, 0, 0),
-                align: center,
-                align_vertical: center,
-                parent: node
-            });
-            nodes[n] = node;
+            var p = add_node();
+            particles.push(p);
+            nodes[n] = p;
         }
+
         for (n in graph.get_nodes()) {
             for (l in graph.get_links_for_node(n)) {
-                Luxe.draw.line({
-                    p0: nodes[n].pos,
-                    p1: nodes[l].pos,
-                    color: new Color(1, 0, 0)
-                });
+                add_edge(nodes[n], nodes[l]);
+                s.tick(1); // HACK to run simulation on graph
             }
         }
 
-        setup_particles();
     }
 
     function setup_particles() {
@@ -91,8 +113,8 @@ class WorldState extends State {
          initialize();
     }
 
-    var NODE_SIZE :Float = 10;
-    var EDGE_LENGTH :Float = 50;
+    var NODE_SIZE :Float = 30;
+    var EDGE_LENGTH :Float = 100;
     var EDGE_STRENGTH :Float = 0.2;
     var SPACER_STRENGTH :Float = 1000;
 
@@ -110,22 +132,31 @@ class WorldState extends State {
 
     function initialize() {
         s.clear();
-        addNode();
     }
 
-    function addNode() {
-        var p :Particle = s.makeParticle();
-        if (particles.length > 0) {
-            var q :Particle = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
-            while (q == p) {
-                q = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
-            }
-            addSpacersToNode( p, q );
-            makeEdgeBetween( p, q );
-            p.position = new Vector3D(q.position.x -1 + 2 * Math.random(), q.position.y -1 + 2 * Math.random(), 0);
-        }
-        particles.push(p);
+    function add_node() {
+        return s.makeParticle();
     }
+
+    function add_edge(p :Particle, q :Particle) {
+        addSpacersToNode(p, q);
+        makeEdgeBetween(p, q);
+        p.position = new Vector3D(q.position.x -1 + 2 * Math.random(), q.position.y -1 + 2 * Math.random(), 0);
+    }
+
+    // function addNode() {
+    //     var p :Particle = s.makeParticle();
+    //     if (particles.length > 0) {
+    //         var q :Particle = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
+    //         while (q == p) {
+    //             q = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
+    //         }
+    //         addSpacersToNode( p, q );
+    //         makeEdgeBetween( p, q );
+    //         p.position = new Vector3D(q.position.x -1 + 2 * Math.random(), q.position.y -1 + 2 * Math.random(), 0);
+    //     }
+    //     particles.push(p);
+    // }
 
     override function onenter(_) {
         // Luxe.camera.zoom = 0.10;
@@ -157,15 +188,23 @@ class WorldState extends State {
             });
         }
 
-        for (p in particles) {
+        for (n in nodes.keys()) {
+            var p = nodes[n];
             Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
-                r: 10,
+                r: NODE_SIZE,
                 sides: 6,
                 color: new Color(1, 0, 1, 1),
                 solid: true,
                 immediate: true
+            });
+            Luxe.draw.text({
+                pos: new Vector(p.position.x, p.position.y),
+                text: n.value,
+                immediate: true,
+                align: center,
+                align_vertical: center
             });
         }
 
@@ -182,7 +221,7 @@ class WorldState extends State {
     }
 
     override function onmousedown(event :MouseEvent) {
-        addNode();
+        // addNode();
     }
 
     override function update(dt :Float) {
