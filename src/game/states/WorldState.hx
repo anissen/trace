@@ -27,8 +27,8 @@ class WorldState extends State {
     var overlay_filter :Sprite;
 
     var s :ParticleSystem;
-    var fixParticle :Particle;
-    var particles :Array<Particle>;
+    // var fixParticle :Particle;
+    // var particles :Array<Particle>;
 
     var current :core.models.Graph.Node<String>;
 
@@ -41,7 +41,7 @@ class WorldState extends State {
 
     public function new() {
         super({ name: StateId });
-        particles = [];
+        // particles = [];
         current = null;
     }
 
@@ -87,21 +87,37 @@ class WorldState extends State {
 
         setup_particles();
 
-        for (n in graph.get_nodes()) {
+        // for (n in graph.get_nodes()) {
+        //     var p = add_node();
+        //     particles.push(p);
+        //     nodes[n] = p;
+        //
+        //     if (current == null) current = n;
+        // }
+        //
+        // for (n in graph.get_nodes()) {
+        //     for (l in graph.get_links_for_node(n)) {
+        //         add_edge(nodes[n], nodes[l]);
+        //         s.tick(1); // HACK to run simulation on graph
+        //     }
+        // }
+
+        var start_node = graph.get_nodes()[0];
+        var p = add_node();
+        // particles.push(p);
+        nodes[start_node] = p;
+        select_node(start_node);
+    }
+
+    function add_linked_nodes(n :core.models.Graph.Node<String>) {
+        for (l in graph.get_links_for_node(n)) {
+            if (nodes.exists(l)) continue;
+
             var p = add_node();
-            particles.push(p);
-            nodes[n] = p;
-
-            if (current == null) current = n;
+            // particles.push(p); // redundant
+            nodes[l] = p;
+            add_edge(p, nodes[n]);
         }
-
-        for (n in graph.get_nodes()) {
-            for (l in graph.get_links_for_node(n)) {
-                add_edge(nodes[n], nodes[l]);
-                s.tick(1); // HACK to run simulation on graph
-            }
-        }
-
     }
 
     function setup_particles() {
@@ -126,7 +142,7 @@ class WorldState extends State {
     var SPACER_STRENGTH :Float = 1000;
 
     function addSpacersToNode(p :Particle, r :Particle) {
-        for (q in particles) {
+        for (q in s.particles) {
             if (p != q && p != r) {
                 s.makeAttraction( p, q, -SPACER_STRENGTH, 20 );
             }
@@ -167,7 +183,7 @@ class WorldState extends State {
 
     override function onenter(_) {
         Luxe.camera.zoom = 0.1;
-        luxe.tween.Actuate.tween(Luxe.camera, 5, { zoom: 1 });
+        luxe.tween.Actuate.tween(Luxe.camera, 1, { zoom: 1.5 });
 
         // overlay_filter = new Sprite({
         //     pos: Luxe.screen.mid.clone(),
@@ -200,7 +216,7 @@ class WorldState extends State {
             Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
-                r: (n == current ? NODE_SIZE * 2 : NODE_SIZE),
+                r: (n == current ? NODE_SIZE * 1.2 : NODE_SIZE),
                 sides: 6,
                 color: (n == current ? new Color(1, 0.2, 0, 1) : new Color(1, 0, 1, 1)),
                 solid: true,
@@ -214,15 +230,6 @@ class WorldState extends State {
                 align_vertical: center
             });
         }
-
-        // if (current != null) {
-        //     var p = nodes[current];
-        //     Luxe.camera.focus(new Vector(p.position.x - Luxe.screen.width / 2, p.position.y - Luxe.screen.height / 2));
-        //
-        //     // TODO: should be fixed to the current node
-        //     // Luxe.camera.pos = new Vector(centroidX - Luxe.screen.width / 2, centroidY - Luxe.screen.height / 2);
-        //     // Luxe.camera.zoom = scale;
-        // }
     }
     override function onmousemove(event :MouseEvent) {
 
@@ -231,7 +238,13 @@ class WorldState extends State {
     override function onmousedown(event :MouseEvent) {
         // addNode();
         var links = graph.get_links_for_node(current);
-        current = links[Math.floor(links.length * Math.random())];
+        var random_link = links[Math.floor(links.length * Math.random())];
+        select_node(random_link);
+    }
+
+    function select_node(node) {
+        add_linked_nodes(node);
+        current = node;
         var p = nodes[current];
         Luxe.camera.focus(new Vector(p.position.x, p.position.y));
     }
