@@ -206,3 +206,43 @@ class Test {
         return g;
     }
 }
+
+class Test2 {
+    public static function get_graph() {
+        var g = new Graph();
+        var start = g.create_node('start');
+        var r1 = g.create_node('room');
+        var r2 = g.create_node('room');
+        var r3 = g.create_node('room');
+        var r4 = g.create_node('room');
+        var goal = g.create_node('goal');
+        g.link(start, r1);
+        g.link(r1, r2);
+        g.link(r2, r3);
+        g.link(r2, r4);
+        g.link(r4, goal);
+        g.print();
+
+        g.replace(get_graph_pattern(), get_graph_replacement());
+
+        return g;
+    }
+
+    static function get_graph_pattern() {
+        var g = new Graph();
+        var A = g.create_node('room', 1);
+        var B = g.create_node('room', 2);
+        g.link(A, B);
+        return g;
+    }
+
+    static function get_graph_replacement() {
+        var g = new Graph();
+        var A = g.create_node('room', 1);
+        var B = g.create_node('room_locked', 2);
+        var b = g.create_node('room_key', 3);
+        g.link(A, B);
+        g.link(A, b);
+        return g;
+    }
+}

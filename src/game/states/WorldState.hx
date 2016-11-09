@@ -59,7 +59,7 @@ class WorldState extends State {
 
         nodes = new Map();
         // test
-        graph = core.models.Graph.Test.get_graph();
+        graph = core.models.Graph.Test2.get_graph();
         // for (n in graph.get_nodes()) {
         //     var pos = new Vector(Luxe.screen.w * Math.random(), Luxe.screen.h * Math.random());
         //     var node = new luxe.Visual({
@@ -102,7 +102,7 @@ class WorldState extends State {
         //     }
         // }
 
-        var start_node = graph.get_nodes()[0];
+        var start_node = graph.get_node('start'); //graph.get_nodes()[0];
         var p = add_node();
         // particles.push(p);
         nodes[start_node] = p;
