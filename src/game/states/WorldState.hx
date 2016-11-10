@@ -15,11 +15,6 @@ import core.physics.*;
 
 using Lambda;
 
-// typedef NodePair = {
-//     node :core.models.Graph.Node<String>,
-//     particle :Particle
-// };
-
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
 
@@ -27,21 +22,13 @@ class WorldState extends State {
     var overlay_filter :Sprite;
 
     var s :ParticleSystem;
-    // var fixParticle :Particle;
-    // var particles :Array<Particle>;
 
     var current :core.models.Graph.Node<String>;
-
-    // var nodePairs :Array<NodePair>;
-
-    // var nodes :Map<core.models.Graph.Node<String>, luxe.Visual>;
     var nodes :Map<core.models.Graph.Node<String>, Particle>;
-
     var graph :core.models.Graph<String>;
 
     public function new() {
         super({ name: StateId });
-        // particles = [];
         current = null;
     }
 
@@ -58,6 +45,7 @@ class WorldState extends State {
         });
 
         nodes = new Map();
+
         // test
         graph = core.models.Graph.Test2.get_graph();
         // for (n in graph.get_nodes()) {
@@ -87,24 +75,8 @@ class WorldState extends State {
 
         setup_particles();
 
-        // for (n in graph.get_nodes()) {
-        //     var p = add_node();
-        //     particles.push(p);
-        //     nodes[n] = p;
-        //
-        //     if (current == null) current = n;
-        // }
-        //
-        // for (n in graph.get_nodes()) {
-        //     for (l in graph.get_links_for_node(n)) {
-        //         add_edge(nodes[n], nodes[l]);
-        //         s.tick(1); // HACK to run simulation on graph
-        //     }
-        // }
-
         var start_node = graph.get_node('start'); //graph.get_nodes()[0];
         var p = add_node();
-        // particles.push(p);
         nodes[start_node] = p;
         select_node(start_node);
     }
@@ -114,7 +86,6 @@ class WorldState extends State {
             if (nodes.exists(l)) continue;
 
             var p = add_node();
-            // particles.push(p); // redundant
             nodes[l] = p;
             add_edge(p, nodes[n]);
         }
@@ -166,20 +137,6 @@ class WorldState extends State {
         makeEdgeBetween(p, q);
         p.position = new Vector3D(q.position.x -1 + 2 * Math.random(), q.position.y -1 + 2 * Math.random(), 0);
     }
-
-    // function addNode() {
-    //     var p :Particle = s.makeParticle();
-    //     if (particles.length > 0) {
-    //         var q :Particle = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
-    //         while (q == p) {
-    //             q = s.getParticle(Math.floor((s.numberOfParticles()-1) * Math.random()));
-    //         }
-    //         addSpacersToNode( p, q );
-    //         makeEdgeBetween( p, q );
-    //         p.position = new Vector3D(q.position.x -1 + 2 * Math.random(), q.position.y -1 + 2 * Math.random(), 0);
-    //     }
-    //     particles.push(p);
-    // }
 
     override function onenter(_) {
         Luxe.camera.zoom = 0.1;
@@ -236,7 +193,6 @@ class WorldState extends State {
     }
 
     override function onmousedown(event :MouseEvent) {
-        // addNode();
         var links = graph.get_links_for_node(current);
         var random_link = links[Math.floor(links.length * Math.random())];
         select_node(random_link);
