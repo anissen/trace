@@ -27,6 +27,9 @@ class WorldState extends State {
     var nodes :Map<core.models.Graph.Node<String>, Particle>;
     var graph :core.models.Graph<String>;
 
+    // var link_keys :Map<Spring, Int>;
+    var available_keys :Array<String>;
+
     var node_entities :Map<core.models.Graph.Node<String>, game.entities.Node>;
 
     public function new() {
@@ -48,7 +51,9 @@ class WorldState extends State {
 
         nodes = new Map();
         node_entities = new Map();
-
+        // link_keys = new Map();
+        // var key_list = 'ABCDEFGHIJKLMNOPQRSTUVXYZ';
+        available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split(''); //[ for (c in key_list.split()) c ];
 
         // test
         graph = core.models.Graph.Test2.get_graph();
@@ -81,7 +86,8 @@ class WorldState extends State {
                 color: (n == current ? new Color(1, 0.2, 0, 1) : new Color(1, 0, 1, 1)),
                 solid: true
             }),
-            value: n.value
+            value: n.value,
+            key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0]
         });
     }
 
@@ -116,6 +122,8 @@ class WorldState extends State {
 
     function makeEdgeBetween(a :Particle, b :Particle) {
         s.makeSpring(a, b, EDGE_STRENGTH, EDGE_STRENGTH, EDGE_LENGTH);
+        // var key = available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0];
+        // link_keys[spring] = key.charAt(0);
     }
 
     function initialize() {
@@ -177,25 +185,34 @@ class WorldState extends State {
         return result;
     }
 
-    override function onmousemove(event :MouseEvent) {
-        for (n in node_entities.keys()) {
-            var entity = node_entities[n];
-            var hit = Luxe.utils.geometry.point_in_geometry(get_world_pos(event.pos), entity.geometry);
-            entity.color.r = (hit ? 0 : 1);
-        }
-    }
+    // override function onmousemove(event :MouseEvent) {
+    //     for (n in node_entities.keys()) {
+    //         var entity = node_entities[n];
+    //         var hit = Luxe.utils.geometry.point_in_geometry(get_world_pos(event.pos), entity.geometry);
+    //         entity.color.r = (hit ? 0 : 1);
+    //     }
+    // }
+    //
+    // override function onmousedown(event :MouseEvent) {
+    //     for (n in node_entities.keys()) {
+    //         var entity = node_entities[n];
+    //         var hit = Luxe.utils.geometry.point_in_geometry(get_world_pos(event.pos), entity.geometry);
+    //         if (hit) {
+    //             for (node in node_entities.keys()) {
+    //                 if (node_entities[node] == entity) {
+    //                     select_node(node);
+    //                     return;
+    //                 }
+    //             }
+    //             return;
+    //         }
+    //     }
+    // }
 
-    override function onmousedown(event :MouseEvent) {
-        for (n in node_entities.keys()) {
-            var entity = node_entities[n];
-            var hit = Luxe.utils.geometry.point_in_geometry(get_world_pos(event.pos), entity.geometry);
-            if (hit) {
-                for (node in node_entities.keys()) {
-                    if (node_entities[node] == entity) {
-                        select_node(node);
-                        return;
-                    }
-                }
+    override function onkeydown(event :luxe.Input.KeyEvent) {
+        for (n in graph.get_links_for_node(current)) {
+            if (event.keycode == node_entities[n].key.toLowerCase().charCodeAt(0)) {
+                select_node(n);
                 return;
             }
         }
@@ -210,6 +227,10 @@ class WorldState extends State {
         if (!node_entities.exists(node)) {
             node_entities[node] = create_node_entity(p, node);
         }
+        for (entity in node_entities.iterator()) {
+            entity.color.rgb(0x00FF11);
+        }
+        node_entities[current].color.rgb(0xFF0011);
         add_linked_nodes(node);
         Luxe.camera.focus(new Vector(p.position.x, p.position.y));
     }
