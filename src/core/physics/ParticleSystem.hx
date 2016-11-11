@@ -18,7 +18,7 @@ class ParticleSystem  {
 	public var particles :Array<Particle>; // TODO:getters
 	public var springs :Array<Spring>;
 	public var attractions :Array<Attraction>;
-	public var custom :Array<Force>;
+	public var forces :Array<Force>;
 
 	var hasDeadParticles :Bool;
 
@@ -29,7 +29,7 @@ class ParticleSystem  {
 		particles = new Array();
 		springs = new Array();
 		attractions = new Array();
-		custom = new Array();
+		forces = new Array();
 
 		this.gravity = (gravity!=null) ? gravity :new Vector3D();
 		this.drag = drag;
@@ -63,29 +63,22 @@ class ParticleSystem  {
 	}
 
 	public function makeSpring(a :Particle, b :Particle, springConstant :Float, damping :Float, restLength :Float) :Spring {
-		var s :Spring;
-		s = new Spring(a, b, springConstant, damping, restLength);
+		var s = new Spring(a, b, springConstant, damping, restLength);
 		springs.push(s);
 		return s;
 	}
 
 	public function makeAttraction(a :Particle, b :Particle, strength :Float, minDistance :Float) :Attraction {
-		var m :Attraction;
-		m = new Attraction(a, b, strength, minDistance);
+		var m = new Attraction(a, b, strength, minDistance);
 		attractions.push(m);
 		return m;
 	}
 
 	public function clear() :Void {
-		var i :Int;
-
-		for(i in 0...particles.length) particles[i] = null;
-		for(i in 0...springs.length) springs[i] = null;
-		for(i in 0...attractions.length) attractions[i] = null;
-
-		particles = new Array<Particle>();
-		springs = new Array<Spring>();
-		attractions = new Array<Attraction>();
+		particles = [];
+		springs = [];
+		attractions = [];
+		forces = [];
 	}
 
 	public function applyForces() :Void {
@@ -103,9 +96,9 @@ class ParticleSystem  {
 			p.force = p.force.add(vdrag);
 		}
 
-		for(i in 0...springs.length) springs[i].apply();
-		for(i in 0...attractions.length) attractions[i].apply();
-		for(i in 0...custom.length) custom[i].apply();
+		for (spring in springs) spring.apply();
+		for (attraction in attractions) attraction.apply();
+		for (force in forces) force.apply();
 	}
 
 	public function clearForces() :Void {
@@ -143,35 +136,35 @@ class ParticleSystem  {
 	}
 
 	public function addCustomForce(f :Force) :Void {
-		custom.push(f);
+		forces.push(f);
 	}
 
 	public function numberOfCustomForces() :Int {
-		return custom.length;
+		return forces.length;
 	}
 
 	public function getCustomForce(i :Int) :Force {
-		return custom[i];
+		return forces[i];
 	}
 
 	public function removeCustomForce(i :Int) :Void {
-		custom[i] = null;
-		custom.splice(i, 1);
+		forces[i] = null;
+		forces.splice(i, 1);
 	}
 
 	public function removeCustomForceByReference(f :Force) :Bool {
 		var n :Int;
 		n = -1;
 
-		for(i in 0...custom.length) {
-			if(custom[i]==f) {
+		for(i in 0...forces.length) {
+			if(forces[i]==f) {
 				n = i;
 				break;
 			}
 		}
 		if(n != -1) {
-			custom[n] = null;
-			custom.splice(n, 1);
+			forces[n] = null;
+			forces.splice(n, 1);
 			return true;
 		}
 		else {

@@ -103,8 +103,8 @@ class WorldState extends State {
 
     var NODE_SIZE :Float = 50;
     var EDGE_LENGTH :Float = 200;
-    var EDGE_STRENGTH :Float = 0.2;
-    var SPACER_STRENGTH :Float = 1000;
+    var EDGE_STRENGTH :Float = 2;
+    var SPACER_STRENGTH :Float = 10000;
 
     function addSpacersToNode(p :Particle, r :Particle) {
         for (q in s.particles) {
@@ -115,7 +115,7 @@ class WorldState extends State {
     }
 
     function makeEdgeBetween(a :Particle, b :Particle) {
-        s.makeSpring( a, b, EDGE_STRENGTH, EDGE_STRENGTH, EDGE_LENGTH );
+        s.makeSpring(a, b, EDGE_STRENGTH, EDGE_STRENGTH, EDGE_LENGTH);
     }
 
     function initialize() {

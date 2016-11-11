@@ -37,7 +37,8 @@ class Main extends luxe.Game {
         postprocess.toggle(); // disable shader for now
 
         states = new States({ name: 'state_machine' });
-        states.add(new WorldState());
+        var worldstate = new WorldState();
+        states.add(worldstate);
         states.set(WorldState.StateId);
 
         var theme :pgr.dconsole.DCThemes.Theme = {
@@ -64,6 +65,7 @@ class Main extends luxe.Game {
         // DC.log("This text will be logged.");
         DC.registerFunction(function() { postprocess.toggle(); }, "toggle_shader");
         // DC.registerObject(this, "myobject");
+        DC.registerObject(worldstate, "world");
         // DC.registerClass(Math, "Math");
     }
 
