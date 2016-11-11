@@ -77,6 +77,7 @@ class WorldState extends State {
                 y: p.position.y,
                 r: (n == current ? NODE_SIZE * 1.2 : NODE_SIZE),
                 sides: 6,
+                angle: 30,
                 color: (n == current ? new Color(1, 0.2, 0, 1) : new Color(1, 0, 1, 1)),
                 solid: true
             }),
@@ -100,8 +101,8 @@ class WorldState extends State {
          initialize();
     }
 
-    var NODE_SIZE :Float = 30;
-    var EDGE_LENGTH :Float = 100;
+    var NODE_SIZE :Float = 50;
+    var EDGE_LENGTH :Float = 200;
     var EDGE_STRENGTH :Float = 0.2;
     var SPACER_STRENGTH :Float = 1000;
 
@@ -133,7 +134,7 @@ class WorldState extends State {
 
     override function onenter(_) {
         Luxe.camera.zoom = 0.1;
-        luxe.tween.Actuate.tween(Luxe.camera, 1, { zoom: 1.5 });
+        luxe.tween.Actuate.tween(Luxe.camera, 0.5, { zoom: 1 });
 
         // overlay_filter = new Sprite({
         //     pos: Luxe.screen.mid.clone(),
@@ -185,9 +186,19 @@ class WorldState extends State {
     }
 
     override function onmousedown(event :MouseEvent) {
-        var links = graph.get_links_for_node(current);
-        var random_link = links[Math.floor(links.length * Math.random())];
-        select_node(random_link);
+        for (n in node_entities.keys()) {
+            var entity = node_entities[n];
+            var hit = Luxe.utils.geometry.point_in_geometry(get_world_pos(event.pos), entity.geometry);
+            if (hit) {
+                for (node in node_entities.keys()) {
+                    if (node_entities[node] == entity) {
+                        select_node(node);
+                        return;
+                    }
+                }
+                return;
+            }
+        }
     }
 
     function select_node(node :core.models.Graph.Node<String>) {

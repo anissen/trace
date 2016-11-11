@@ -19,6 +19,7 @@ class Node extends Visual {
             color: new Color(0, 0, 0),
             align: center,
             align_vertical: center,
+            point_size: 16,
             parent: this
         });
     }
