@@ -27,6 +27,8 @@ class WorldState extends State {
     var nodes :Map<core.models.Graph.Node<String>, Particle>;
     var graph :core.models.Graph<String>;
 
+    var node_entities :Map<core.models.Graph.Node<String>, game.entities.Node>;
+
     public function new() {
         super({ name: StateId });
         current = null;
@@ -45,39 +47,15 @@ class WorldState extends State {
         });
 
         nodes = new Map();
+        node_entities = new Map();
+
 
         // test
         graph = core.models.Graph.Test2.get_graph();
-        // for (n in graph.get_nodes()) {
-        //     var pos = new Vector(Luxe.screen.w * Math.random(), Luxe.screen.h * Math.random());
-        //     var node = new luxe.Visual({
-        //         pos: new Vector(Luxe.screen.w * Math.random(), Luxe.screen.h * Math.random()),
-        //         geometry: Luxe.draw.circle({ r: 30 })
-        //     });
-        //     new luxe.Text({
-        //         text: n.value,
-        //         color: new Color(0, 0, 0),
-        //         align: center,
-        //         align_vertical: center,
-        //         parent: node
-        //     });
-        //     nodes[n] = node;
-        // }
-        // for (n in graph.get_nodes()) {
-        //     for (l in graph.get_links_for_node(n)) {
-        //         Luxe.draw.line({
-        //             p0: nodes[n].pos,
-        //             p1: nodes[l].pos,
-        //             color: new Color(1, 0, 0)
-        //         });
-        //     }
-        // }
 
         setup_particles();
 
-        var start_node = graph.get_node('start'); //graph.get_nodes()[0];
-        var p = add_node();
-        nodes[start_node] = p;
+        var start_node = graph.get_node('start');
         select_node(start_node);
     }
 
@@ -86,9 +64,24 @@ class WorldState extends State {
             if (nodes.exists(l)) continue;
 
             var p = add_node();
+            node_entities[l] = create_node_entity(p, l);
             nodes[l] = p;
             add_edge(p, nodes[n]);
         }
+    }
+
+    function create_node_entity(p :Particle, n :core.models.Graph.Node<String>) {
+        return new game.entities.Node({
+            geometry: Luxe.draw.ngon({
+                x: p.position.x,
+                y: p.position.y,
+                r: (n == current ? NODE_SIZE * 1.2 : NODE_SIZE),
+                sides: 6,
+                color: (n == current ? new Color(1, 0.2, 0, 1) : new Color(1, 0, 1, 1)),
+                solid: true
+            }),
+            value: n.value
+        });
     }
 
     function setup_particles() {
@@ -168,28 +161,27 @@ class WorldState extends State {
             });
         }
 
-        for (n in nodes.keys()) {
+        for (n in node_entities.keys()) {
             var p = nodes[n];
-            Luxe.draw.ngon({
-                x: p.position.x,
-                y: p.position.y,
-                r: (n == current ? NODE_SIZE * 1.2 : NODE_SIZE),
-                sides: 6,
-                color: (n == current ? new Color(1, 0.2, 0, 1) : new Color(1, 0, 1, 1)),
-                solid: true,
-                immediate: true
-            });
-            Luxe.draw.text({
-                pos: new Vector(p.position.x, p.position.y),
-                text: n.value,
-                immediate: true,
-                align: center,
-                align_vertical: center
-            });
+            var entity = node_entities[n];
+            entity.pos.x = p.position.x;
+            entity.pos.y = p.position.y;
         }
     }
-    override function onmousemove(event :MouseEvent) {
 
+    function get_world_pos(pos :Vector) :Vector {
+        var r = Luxe.camera.view.screen_point_to_ray(pos);
+        var result = Luxe.utils.geometry.intersect_ray_plane(r.origin, r.dir, new Vector(0, 0, 1), new Vector());
+        result.z = 0;
+        return result;
+    }
+
+    override function onmousemove(event :MouseEvent) {
+        for (n in node_entities.keys()) {
+            var entity = node_entities[n];
+            var hit = Luxe.utils.geometry.point_in_geometry(get_world_pos(event.pos), entity.geometry);
+            entity.color.r = (hit ? 0 : 1);
+        }
     }
 
     override function onmousedown(event :MouseEvent) {
@@ -198,10 +190,16 @@ class WorldState extends State {
         select_node(random_link);
     }
 
-    function select_node(node) {
-        add_linked_nodes(node);
+    function select_node(node :core.models.Graph.Node<String>) {
         current = node;
+        if (!nodes.exists(node)) {
+            nodes[node] = add_node();
+        }
         var p = nodes[current];
+        if (!node_entities.exists(node)) {
+            node_entities[node] = create_node_entity(p, node);
+        }
+        add_linked_nodes(node);
         Luxe.camera.focus(new Vector(p.position.x, p.position.y));
     }
 
