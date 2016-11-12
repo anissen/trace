@@ -101,9 +101,9 @@ class WorldState extends State {
 
         haxe.Timer.delay(function() {
             enemy_capture_node = start_node;
-            enemy_capture_time = 5;
-            Luxe.renderer.clear_color.tween(1, { r: 0.2 });
-        }, 5000);
+            enemy_capture_time = 10;
+            Luxe.renderer.clear_color.tween(enemy_capture_time, { r: 0.4 });
+        }, 30000);
     }
 
     function add_linked_nodes(n :GraphNode) {
@@ -386,7 +386,9 @@ class WorldState extends State {
                 enemy_current = enemy_capture_node;
 
                 captured_nodes.remove(enemy_capture_node);
-                node_entities[enemy_capture_node].color.set(0xFF0000);
+                if (node_entities.exists(enemy_capture_node)) {
+                    node_entities[enemy_capture_node].color.set(0xFF0000);
+                }
                 if (enemy_capture_node == current) {
                     Luxe.renderer.clear_color.set(1, 0, 0, 1);
                     enemy_capture_node = null;
