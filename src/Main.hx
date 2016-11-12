@@ -15,7 +15,7 @@ class Main extends luxe.Game {
     override function config(config :luxe.GameConfig) {
         config.render.antialiasing = 4;
 
-        config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/postprocess2.glsl', vert_id: 'default' });
+        config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/fullretard.frag', vert_id: 'default' });
 
         return config;
     }
@@ -37,7 +37,7 @@ class Main extends luxe.Game {
         var shader = Luxe.resources.shader('postprocess');
         shader.set_vector2('resolution', Luxe.screen.size);
         postprocess = new PostProcess(shader);
-        postprocess.toggle(); // disable shader for now
+        // postprocess.toggle(); // disable shader for now
 
         states = new States({ name: 'state_machine' });
         var worldstate = new WorldState();
