@@ -235,12 +235,14 @@ class Test2 {
         var start = g.create_node('start');
         var r1 = g.create_node('room');
         var r2 = g.create_node('room');
+        var gate = g.create_node('gate');
         var r3 = g.create_node('room');
         var r4 = g.create_node('room');
         var goal = g.create_node('goal');
         g.link(start, r1);
         g.link(r1, r2);
-        g.link(r2, r3);
+        g.link(r2, gate);
+        g.link(gate, r3);
         g.link(r3, r4);
         g.link(r4, goal);
 
@@ -261,7 +263,7 @@ class Test2 {
         */
 
         var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
-        pattern_replacements.push({ pattern: get_graph_pattern(), replacements: [get_graph_expansion(), get_graph_replacement(), get_graph_replacement2()]});
+        pattern_replacements.push({ pattern: get_graph_pattern(), replacements: [get_graph_expansion(), get_graph_shortcut(), get_graph_replacement(), get_graph_replacement2()]});
         pattern_replacements.push({ pattern: get_graph_pattern_lock(), replacements: [get_graph_replace_lock()]});
 
         var replacements = 0;
@@ -331,6 +333,21 @@ class Test2 {
         var C = g.create_node('room', 3);
         g.link(A, B);
         g.link(B, C);
+        return g;
+    }
+
+    static function get_graph_shortcut() {
+        var g = new Graph();
+        var A = g.create_node('room', 1);
+        var B = g.create_node('room', 3);
+        var C = g.create_node('room', 4);
+        var D = g.create_node('room', 5);
+        var E = g.create_node('room', 2);
+        g.link(A, B);
+        g.link(B, C);
+        g.link(C, D);
+        g.link(D, E);
+        g.link(E, A);
         return g;
     }
 

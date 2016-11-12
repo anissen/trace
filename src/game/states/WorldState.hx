@@ -108,10 +108,9 @@ class WorldState extends State {
             geometry: Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
-                r: (n == current ? NODE_SIZE * 1.2 : NODE_SIZE),
+                r: NODE_SIZE,
                 sides: 6,
                 angle: 30,
-                color: (n == current ? new Color(1, 0.2, 0, 1) : new Color(1, 0, 1, 1)),
                 solid: true
             }),
             value: n.to_string(),
@@ -207,7 +206,7 @@ class WorldState extends State {
                 r: NODE_SIZE + (NODE_SIZE * capture_time),
                 sides: 6,
                 angle: 30,
-                color: new Color(1, 0.2, 0, 1),
+                color: new Color().rgb(0xF012BE),
                 solid: false,
                 immediate: true
             });
@@ -260,7 +259,7 @@ class WorldState extends State {
         for (n in graph.get_links_for_node(current)) {
             if (event.keycode == node_entities[n].key.toLowerCase().charCodeAt(0)) {
                 var already_captured = (captured_nodes.indexOf(n) >= 0);
-                capture_time = (already_captured ? 0.3 : 2);
+                capture_time = (already_captured ? 0.2 : 1.5);
                 capture_node = n;
                 return;
             }

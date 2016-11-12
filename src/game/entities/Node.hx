@@ -20,11 +20,11 @@ class Node extends Visual {
         this.key = options.key;
 
         new luxe.Text({
-            text: options.key + '\n' + options.value,
+            text: options.key, // + '\n' + options.value,
             color: new Color(0, 0, 0),
             align: center,
             align_vertical: center,
-            point_size: 16,
+            point_size: 36,
             parent: this
         });
     }
