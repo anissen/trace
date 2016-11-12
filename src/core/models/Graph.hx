@@ -244,6 +244,7 @@ class Test2 {
         g.link(r3, r4);
         g.link(r4, goal);
 
+        /*
         trace('Before replace');
         g.print_walk(start);
         var r = g.replace(get_graph_pattern(), get_graph_replacement());
@@ -257,10 +258,10 @@ class Test2 {
 
         trace('After 2nd replace');
         g.print_walk(start);
+        */
 
-        /*
         var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
-        pattern_replacements.push({ pattern: get_graph_pattern(), replacements: [get_graph_replacement(), get_graph_replacement2()]});
+        pattern_replacements.push({ pattern: get_graph_pattern(), replacements: [get_graph_expansion(), get_graph_replacement(), get_graph_replacement2()]});
         pattern_replacements.push({ pattern: get_graph_pattern_lock(), replacements: [get_graph_replace_lock()]});
 
         var replacements = 0;
@@ -272,6 +273,9 @@ class Test2 {
                 core.tools.ArrayTools.shuffle(pair.replacements);
                 for (replacement in pair.replacements) {
                     if (g.replace(pair.pattern, replacement)) {
+                        trace('Made a replacement with:');
+                        trace('Pattern:'); pair.pattern.print();
+                        trace('Replacement:'); replacement.print();
                         replacements++;
                         replacements_this_pass++;
                     }
@@ -279,10 +283,12 @@ class Test2 {
                 }
                 if (replacements > max_replacements) break;
             }
-            if (replacements_this_pass == 0) break;
+            if (replacements_this_pass == 0) {
+                trace('No more available patterns found!');
+                break;
+            }
         }
-        trace('Made $max_replacements replacements!');
-        */
+        trace('Made $replacements replacements!');
 
         return g;
     }
@@ -315,6 +321,16 @@ class Test2 {
         var A = g.create_node('gate', 1);
         var B = g.create_node('dataserver', 2);
         g.link(A, B);
+        return g;
+    }
+
+    static function get_graph_expansion() {
+        var g = new Graph();
+        var A = g.create_node('room', 1);
+        var B = g.create_node('room', 2);
+        var C = g.create_node('room', 3);
+        g.link(A, B);
+        g.link(B, C);
         return g;
     }
 
