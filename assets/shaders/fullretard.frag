@@ -18,8 +18,8 @@ void main(void)
     float shift = 0.003; // TODO make uniform input (shift = bad / damage)
 
     vec2 q = gl_FragCoord.xy / resolution.xy;
-    vec2 uv = 0.5 + (q - 0.5);
-    // vec2 uv = 0.5 + (q - 0.5) * (0.9 + 0.1 * sin(0.2 * time));
+    // vec2 uv = 0.5 + (q - 0.5);
+    vec2 uv = 0.5 + (q - 0.5) * (0.9 + 0.1 * sin(0.2 * time));
     vec3 col;
     vec4 sum = vec4(0);
     vec4 curcol = texture2D(tex0, q);
@@ -30,16 +30,17 @@ void main(void)
             sum += texture2D(tex0, vec2(j,i) * 0.004 + q) * 0.25;
         }
     }
+    col = curcol.rgb;
 
     // electron beam shift (plus random distortion)
-    if (rand(vec2(1.-time, sin(time)))>0.98) {
+    if (rand(vec2(1.-time, sin(time)))>0.99) {
        shift = 0.1*rand(vec2(time, time));
+       col.r = texture2D(tex0,vec2(uv.x+shift,uv.y)).x;
+       col.g = texture2D(tex0,vec2(uv.x,uv.y)).y;
+       col.b = texture2D(tex0,vec2(uv.x-shift,uv.y)).z;
     }
-    col.r = texture2D(tex0,vec2(uv.x+shift,uv.y)).x;
-    col.g = texture2D(tex0,vec2(uv.x,uv.y)).y;
-    col.b = texture2D(tex0,vec2(uv.x-shift,uv.y)).z;
 
-    // col = curcol.rgb;
+
 
     col = clamp(col*0.5+0.5*col*col*1.2,0.0,1.0);          // tone curve
     col *= 0.5 + 0.5 * 16.0 * uv.x * uv.y * (1.0 - uv.x) * (1.0 - uv.y); // vignette

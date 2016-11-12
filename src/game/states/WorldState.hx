@@ -32,6 +32,7 @@ class WorldState extends State {
 
     var capture_time :Float;
     var capture_node :core.models.Graph.Node<String>;
+    var captured_nodes :Array<core.models.Graph.Node<String>>;
 
     var node_entities :Map<core.models.Graph.Node<String>, game.entities.Node>;
 
@@ -60,6 +61,7 @@ class WorldState extends State {
 
         capture_node = null;
         capture_time = 0;
+        captured_nodes = [];
 
         // test
         graph = core.models.Graph.Test2.get_graph();
@@ -71,13 +73,17 @@ class WorldState extends State {
     }
 
     function add_linked_nodes(n :core.models.Graph.Node<String>) {
+        var delay = 0;
         for (l in graph.get_links_for_node(n)) {
             if (nodes.exists(l)) continue;
 
-            var p = add_node();
-            node_entities[l] = create_node_entity(p, l);
-            nodes[l] = p;
-            add_edge(p, nodes[n]);
+            haxe.Timer.delay(function() {
+                var p = add_node();
+                node_entities[l] = create_node_entity(p, l);
+                nodes[l] = p;
+                add_edge(p, nodes[n]);
+            }, delay);
+            delay += 500;
         }
     }
 
@@ -116,7 +122,7 @@ class WorldState extends State {
     var NODE_SIZE :Float = 50;
     var EDGE_LENGTH :Float = 200;
     var EDGE_STRENGTH :Float = 2;
-    var SPACER_STRENGTH :Float = 10000;
+    var SPACER_STRENGTH :Float = 20000;
 
     function addSpacersToNode(p :Particle, r :Particle) {
         for (q in s.particles) {
@@ -172,7 +178,7 @@ class WorldState extends State {
             Luxe.draw.line({
                 p0: new Vector(a.position.x, a.position.y),
                 p1: new Vector(b.position.x, b.position.y),
-                color: new Color().rgb(0x00DD11),
+                // color: new Color().rgb(0x00DD11),
                 immediate: true
             });
         }
@@ -237,7 +243,8 @@ class WorldState extends State {
         }
         for (n in graph.get_links_for_node(current)) {
             if (event.keycode == node_entities[n].key.toLowerCase().charCodeAt(0)) {
-                capture_time = 1;
+                var already_captured = (captured_nodes.indexOf(n) >= 0);
+                capture_time = (already_captured ? 0.3 : 2);
                 capture_node = n;
                 return;
             }
@@ -249,6 +256,8 @@ class WorldState extends State {
     }
 
     function select_node(node :core.models.Graph.Node<String>) {
+        if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
+
         current = node;
         if (!nodes.exists(node)) {
             nodes[node] = add_node();
@@ -257,10 +266,10 @@ class WorldState extends State {
         if (!node_entities.exists(node)) {
             node_entities[node] = create_node_entity(p, node);
         }
-        for (entity in node_entities.iterator()) {
-            entity.color.rgb(0x00FF11);
+        for (node in captured_nodes) {
+            node_entities[node].color.rgb(0x2ECC40); // .rgb(0x44FF44);
         }
-        node_entities[current].color.rgb(0xFF0011);
+        node_entities[current].color.rgb(0xF012BE); // .rgb(0xDD00FF);
         add_linked_nodes(node);
         Luxe.camera.focus(new Vector(p.position.x, p.position.y), 0.3);
     }
