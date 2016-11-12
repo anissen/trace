@@ -30,6 +30,9 @@ class WorldState extends State {
     // var link_keys :Map<Spring, Int>;
     var available_keys :Array<String>;
 
+    var capture_time :Float;
+    var capture_node :core.models.Graph.Node<String>;
+
     var node_entities :Map<core.models.Graph.Node<String>, game.entities.Node>;
 
     public function new() {
@@ -54,6 +57,9 @@ class WorldState extends State {
         // link_keys = new Map();
         // var key_list = 'ABCDEFGHIJKLMNOPQRSTUVXYZ';
         available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split(''); //[ for (c in key_list.split()) c ];
+
+        capture_node = null;
+        capture_time = 0;
 
         // test
         graph = core.models.Graph.Test2.get_graph();
@@ -171,6 +177,20 @@ class WorldState extends State {
             });
         }
 
+        if (capture_node != null) {
+            var p = nodes[capture_node];
+            Luxe.draw.ngon({
+                x: p.position.x,
+                y: p.position.y,
+                r: NODE_SIZE + (NODE_SIZE * capture_time),
+                sides: 6,
+                angle: 30,
+                color: new Color(1, 0.2, 0, 1),
+                solid: false,
+                immediate: true
+            });
+        }
+
         for (n in node_entities.keys()) {
             var p = nodes[n];
             var entity = node_entities[n];
@@ -211,12 +231,21 @@ class WorldState extends State {
     // }
 
     override function onkeydown(event :luxe.Input.KeyEvent) {
+        if (capture_node != null) {
+            // to avoid retriggering the capture
+            if (event.keycode == node_entities[capture_node].key.toLowerCase().charCodeAt(0)) return;
+        }
         for (n in graph.get_links_for_node(current)) {
             if (event.keycode == node_entities[n].key.toLowerCase().charCodeAt(0)) {
-                select_node(n);
+                capture_time = 1;
+                capture_node = n;
                 return;
             }
         }
+    }
+
+    override function onkeyup(event :luxe.Input.KeyEvent) {
+        capture_node = null;
     }
 
     function select_node(node :core.models.Graph.Node<String>) {
@@ -238,5 +267,13 @@ class WorldState extends State {
 
     override function update(dt :Float) {
         s.tick(dt * 10); // Hack to multiply dt
+
+        if (capture_node != null && capture_node != current) {
+            capture_time -= dt;
+            if (capture_time <= 0) {
+                select_node(capture_node);
+                capture_node = null;
+            }
+        }
     }
 }
