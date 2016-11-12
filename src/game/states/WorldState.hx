@@ -86,7 +86,7 @@ class WorldState extends State {
                 color: (n == current ? new Color(1, 0.2, 0, 1) : new Color(1, 0, 1, 1)),
                 solid: true
             }),
-            value: n.value,
+            value: n.to_string(),
             key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0]
         });
     }
@@ -166,6 +166,7 @@ class WorldState extends State {
             Luxe.draw.line({
                 p0: new Vector(a.position.x, a.position.y),
                 p1: new Vector(b.position.x, b.position.y),
+                color: new Color().rgb(0x00DD11),
                 immediate: true
             });
         }
@@ -232,7 +233,7 @@ class WorldState extends State {
         }
         node_entities[current].color.rgb(0xFF0011);
         add_linked_nodes(node);
-        Luxe.camera.focus(new Vector(p.position.x, p.position.y));
+        Luxe.camera.focus(new Vector(p.position.x, p.position.y), 0.3);
     }
 
     override function update(dt :Float) {

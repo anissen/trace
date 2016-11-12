@@ -34,7 +34,7 @@ class Main extends luxe.Game {
         var shader = Luxe.resources.shader('postprocess');
         shader.set_vector2('resolution', Luxe.screen.size);
         postprocess = new PostProcess(shader);
-        // postprocess.toggle(); // disable shader for now
+        postprocess.toggle(); // disable shader for now
 
         states = new States({ name: 'state_machine' });
         var worldstate = new WorldState();
