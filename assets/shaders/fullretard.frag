@@ -44,7 +44,7 @@ void main(void)
 
     col = clamp(col*0.5+0.5*col*col*1.2,0.0,1.0);          // tone curve
     col *= 0.5 + 0.5 * 16.0 * uv.x * uv.y * (1.0 - uv.x) * (1.0 - uv.y); // vignette
-    col *= vec3(0.7,1.0,0.6);                              // green tint
+    col *= vec3(0.8,1.0,0.7);                              // green tint
     col *= 0.8+0.2 * sin(10.0 * time + uv.y * 900.0);        // scanlines
     col *= 1.0-0.05 * rand(vec2(time, tan(time)));          // random flicker
 

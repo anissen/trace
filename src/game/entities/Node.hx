@@ -25,6 +25,7 @@ class Node extends Visual {
             align: center,
             align_vertical: center,
             point_size: 36,
+            depth: options.depth,
             parent: this
         });
     }

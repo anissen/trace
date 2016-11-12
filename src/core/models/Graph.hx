@@ -281,9 +281,9 @@ class Test2 {
                         replacements++;
                         replacements_this_pass++;
                     }
-                    if (replacements > max_replacements) break;
+                    if (replacements >= max_replacements) break;
                 }
-                if (replacements > max_replacements) break;
+                if (replacements >= max_replacements) break;
             }
             if (replacements_this_pass == 0) {
                 trace('No more available patterns found!');

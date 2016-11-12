@@ -25,17 +25,18 @@ class WorldState extends State {
 
     var s :ParticleSystem;
 
-    var current :GraphNode;
     var nodes :Map<GraphNode, Particle>;
     var graph :core.models.Graph<String>;
 
     // var link_keys :Map<Spring, Int>;
     var available_keys :Array<String>;
 
+    var current :GraphNode;
     var capture_time :Float;
     var capture_node :GraphNode;
     var captured_nodes :Array<GraphNode>;
 
+    var enemy_current :GraphNode;
     var enemy_capture_time :Float;
     var enemy_capture_node :GraphNode;
     var enemy_captured_nodes :Array<GraphNode>;
@@ -49,7 +50,6 @@ class WorldState extends State {
 
     public function new() {
         super({ name: StateId });
-        current = null;
     }
 
     override function init() {
@@ -81,10 +81,12 @@ class WorldState extends State {
         // var key_list = 'ABCDEFGHIJKLMNOPQRSTUVXYZ';
         available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split(''); //[ for (c in key_list.split()) c ];
 
+        current = null;
         capture_node = null;
         capture_time = 0;
         captured_nodes = [];
 
+        enemy_current = null;
         enemy_capture_node = null;
         enemy_capture_time = 0;
         enemy_captured_nodes = [];
@@ -100,6 +102,7 @@ class WorldState extends State {
         haxe.Timer.delay(function() {
             enemy_capture_node = start_node;
             enemy_capture_time = 5;
+            Luxe.renderer.clear_color.tween(1, { r: 0.2 });
         }, 5000);
     }
 
@@ -128,6 +131,7 @@ class WorldState extends State {
                 angle: 30,
                 solid: true
             }),
+            depth: 10,
             value: n.to_string(),
             key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0]
         });
@@ -209,7 +213,23 @@ class WorldState extends State {
                 p0: new Vector(a.position.x, a.position.y),
                 p1: new Vector(b.position.x, b.position.y),
                 // color: new Color().rgb(0x00DD11),
-                immediate: true
+                immediate: true,
+                depth: 5
+            });
+        }
+
+        if (current != null) {
+            var p = nodes[current];
+            Luxe.draw.ngon({
+                x: p.position.x,
+                y: p.position.y,
+                r: NODE_SIZE * 1.2,
+                sides: 6,
+                angle: 30,
+                color: new Color().rgb(0xF012BE),
+                solid: true,
+                immediate: true,
+                depth: 6
             });
         }
 
@@ -223,8 +243,26 @@ class WorldState extends State {
                 angle: 30,
                 color: new Color().rgb(0xF012BE),
                 solid: false,
-                immediate: true
+                immediate: true,
+                depth: 100
             });
+        }
+
+        if (enemy_current != null) {
+            var p = nodes[enemy_current];
+            if (p != null) {
+                Luxe.draw.ngon({
+                    x: p.position.x,
+                    y: p.position.y,
+                    r: NODE_SIZE * 1.2,
+                    sides: 6,
+                    angle: 30,
+                    color: new Color().rgb(0xFF4136),
+                    solid: true,
+                    immediate: true,
+                    depth: 6
+                });
+            }
         }
 
         if (enemy_capture_node != null) {
@@ -238,7 +276,8 @@ class WorldState extends State {
                     angle: 30 + 30 * enemy_capture_time,
                     color: new Color().rgb(0xFF4136),
                     solid: false,
-                    immediate: true
+                    immediate: true,
+                    depth: 100
                 });
             }
         }
@@ -288,6 +327,7 @@ class WorldState extends State {
             if (event.keycode == node_entities[capture_node].key.toLowerCase().charCodeAt(0)) return;
         }
         for (n in graph.get_links_for_node(current)) {
+            if (n == enemy_current || n == enemy_capture_node) continue; // cannot select node currently being captured by enemy
             if (!node_entities.exists(n)) continue; // if creation delay
             if (event.keycode == node_entities[n].key.toLowerCase().charCodeAt(0)) {
                 var already_captured = (captured_nodes.indexOf(n) >= 0);
@@ -303,6 +343,8 @@ class WorldState extends State {
     }
 
     function select_node(node :GraphNode) {
+        if (node == enemy_current || node == enemy_capture_node) return; // cannot select node currently being captured by enemy
+
         if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
         enemy_captured_nodes.remove(node);
 
@@ -341,10 +383,15 @@ class WorldState extends State {
         if (enemy_capture_node != null) {
             enemy_capture_time -= dt;
             if (enemy_capture_time <= 0) {
+                enemy_current = enemy_capture_node;
+
                 captured_nodes.remove(enemy_capture_node);
                 node_entities[enemy_capture_node].color.set(0xFF0000);
                 if (enemy_capture_node == current) {
                     Luxe.renderer.clear_color.set(1, 0, 0, 1);
+                    enemy_capture_node = null;
+                    capture_node = null;
+                    return;
                 }
                 enemy_captured_nodes.push(enemy_capture_node);
                 var links = graph.get_links_for_node(enemy_capture_node);
