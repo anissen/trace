@@ -29,6 +29,9 @@ class Main extends luxe.Game {
 
         luxe.tween.Actuate.defaultEase = luxe.tween.easing.Quad.easeInOut;
 
+        Luxe.renderer.batcher.on(prerender, function(_) { Luxe.renderer.state.lineWidth(3); });
+        Luxe.renderer.batcher.on(postrender, function(_) { Luxe.renderer.state.lineWidth(1); });
+
         Luxe.renderer.clear_color.set(25/255, 35/255, 55/255);
 
         var shader = Luxe.resources.shader('postprocess');
