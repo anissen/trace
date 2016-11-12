@@ -67,8 +67,6 @@ class Graph<T> {
     }
 
     public function mark_pattern(pattern :Graph<T>) :Bool {
-        // find first node
-        trace('pattern node 0: ${pattern.nodes[0].value}');
         var first_nodes = nodes.filter(function(n) { return (n.value == pattern.nodes[0].value); });
         core.tools.ArrayTools.shuffle(first_nodes);
         for (n in first_nodes) {
@@ -81,17 +79,8 @@ class Graph<T> {
         var current_node = first;
         current_node.id = pattern.nodes[0].id;
         for (i in 1 ... pattern.nodes.length) {
-            trace('pattern node $i: ${pattern.nodes[i].value}');
-            var links = get_links_for_node(current_node);
             current_node = get_linked_node_with_value(current_node, pattern.nodes[i].value);
-            if (current_node == null) {
-                trace('No node (#$i) with ID ${pattern.nodes[i].value}');
-                trace('Linked nodes are:');
-                for (l in links) {
-                    trace('-> ${l.to_string()}');
-                }
-                return false;
-            }
+            if (current_node == null) return false;
             current_node.id = pattern.nodes[i].id;
         }
         return true;
@@ -100,17 +89,11 @@ class Graph<T> {
     public function replace(pattern :Graph<T>, replacement :Graph<T>) :Bool {
         /*
         Step 1: Select a group of nodes for replacement as described by a particular rule
-
         Step 2: The selected nodes are numbered according to the left-hand side of the rule.
-
         Step 3: All edges between the selected nodes are removed.
-
         Step 4: The numbered nodes are then replaced by their equivalents (nodes with the same number) on the right-hand side of the rule.
-
         Step 5: Any nodes on the right-hand side that do not have an equivalent on the left-hand side are added to the graph.
-
         Step 6: The edges connecting the new nodes are put into the graph as specified by the right-hand side of the rule.
-
         Step 7: The numbers are removed.
         */
 
