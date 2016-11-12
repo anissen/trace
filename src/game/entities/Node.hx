@@ -28,5 +28,15 @@ class Node extends Visual {
             depth: options.depth,
             parent: this
         });
+        new luxe.Text({
+            pos: new Vector(0, 25),
+            text: options.value,
+            color: new Color(0, 0, 0),
+            align: center,
+            align_vertical: center,
+            point_size: 24,
+            depth: options.depth,
+            parent: this
+        });
     }
 }

@@ -100,6 +100,7 @@ class WorldState extends State {
         select_node(start_node);
 
         haxe.Timer.delay(function() {
+            enemy_current = start_node;
             enemy_capture_node = start_node;
             enemy_capture_time = 10;
             Luxe.renderer.clear_color.tween(enemy_capture_time, { r: 0.4 });
@@ -109,15 +110,27 @@ class WorldState extends State {
     function add_linked_nodes(n :GraphNode) {
         var delay = 0;
         for (l in graph.get_links_for_node(n)) {
-            if (nodes.exists(l)) continue;
-
-            haxe.Timer.delay(function() {
-                var p = add_node();
-                node_entities[l] = create_node_entity(p, l);
-                nodes[l] = p;
-                add_edge(p, nodes[n]);
-            }, delay);
-            delay += 500;
+            if (nodes.exists(l)) {
+                var link_node = true;
+                var p = nodes[l];
+                var q = nodes[n];
+                // check if there already is an edge between p and q
+                for (spring in s.springs) {
+                    if ((spring.getOneEnd() == p && spring.getTheOtherEnd() == q) || (spring.getOneEnd() == q && spring.getTheOtherEnd() == p)) {
+                        link_node = false;
+                        break;
+                    }
+                }
+                if (link_node) add_edge(p, q);
+            } else {
+                haxe.Timer.delay(function() {
+                    var p = add_node();
+                    node_entities[l] = create_node_entity(p, l);
+                    nodes[l] = p;
+                    add_edge(p, nodes[n]);
+                }, delay);
+                delay += 500;
+            }
         }
     }
 
@@ -383,6 +396,8 @@ class WorldState extends State {
         if (enemy_capture_node != null) {
             enemy_capture_time -= dt;
             if (enemy_capture_time <= 0) {
+                Luxe.camera.shake(5);
+
                 enemy_current = enemy_capture_node;
 
                 captured_nodes.remove(enemy_capture_node);
