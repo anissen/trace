@@ -16,6 +16,7 @@ class Main extends luxe.Game {
         config.render.antialiasing = 4;
 
         config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/fullretard.frag', vert_id: 'default' });
+        config.preload.shaders.push({ id: 'circuits', frag_id: 'assets/shaders/circuits.glsl', vert_id: 'default' });
 
         return config;
     }
@@ -29,7 +30,7 @@ class Main extends luxe.Game {
 
         luxe.tween.Actuate.defaultEase = luxe.tween.easing.Quad.easeInOut;
 
-        Luxe.renderer.batcher.on(prerender, function(_) { Luxe.renderer.state.lineWidth(3); });
+        Luxe.renderer.batcher.on(prerender, function(_) { Luxe.renderer.state.lineWidth(4); });
         Luxe.renderer.batcher.on(postrender, function(_) { Luxe.renderer.state.lineWidth(1); });
 
         Luxe.renderer.clear_color.set(25/255, 35/255, 55/255);

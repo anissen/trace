@@ -36,6 +36,11 @@ class WorldState extends State {
 
     var node_entities :Map<core.models.Graph.Node<String>, game.entities.Node>;
 
+    #if with_shader
+    var circuits_sprite :Sprite;
+    var circuits_shader :phoenix.Shader;
+    #end
+
     public function new() {
         super({ name: StateId });
         current = null;
@@ -52,6 +57,17 @@ class WorldState extends State {
         overlay_batcher.on(postrender, function(b :Batcher) {
             Luxe.renderer.blend_mode();
         });
+
+        #if with_shader
+        circuits_shader = Luxe.resources.shader('circuits');
+        circuits_shader.set_vector2('resolution', Luxe.screen.size);
+        circuits_sprite = new Sprite({
+            pos: Luxe.camera.center,
+            size: Luxe.screen.size,
+            shader: circuits_shader,
+            depth: -1000
+        });
+        #end
 
         nodes = new Map();
         node_entities = new Map();
@@ -276,6 +292,11 @@ class WorldState extends State {
 
     override function update(dt :Float) {
         s.tick(dt * 10); // Hack to multiply dt
+
+        #if with_shader
+        circuits_sprite.pos = Luxe.camera.center.clone();
+        if (circuits_shader != null) circuits_shader.set_float('time', (Luxe.core.tick_start + dt) * 0.005);
+        #end
 
         if (capture_node != null && capture_node != current) {
             capture_time -= dt;
