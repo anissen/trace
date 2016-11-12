@@ -15,6 +15,8 @@ import core.physics.*;
 
 using Lambda;
 
+typedef GraphNode = core.models.Graph.Node<String>;
+
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
 
@@ -23,18 +25,22 @@ class WorldState extends State {
 
     var s :ParticleSystem;
 
-    var current :core.models.Graph.Node<String>;
-    var nodes :Map<core.models.Graph.Node<String>, Particle>;
+    var current :GraphNode;
+    var nodes :Map<GraphNode, Particle>;
     var graph :core.models.Graph<String>;
 
     // var link_keys :Map<Spring, Int>;
     var available_keys :Array<String>;
 
     var capture_time :Float;
-    var capture_node :core.models.Graph.Node<String>;
-    var captured_nodes :Array<core.models.Graph.Node<String>>;
+    var capture_node :GraphNode;
+    var captured_nodes :Array<GraphNode>;
 
-    var node_entities :Map<core.models.Graph.Node<String>, game.entities.Node>;
+    var enemy_capture_time :Float;
+    var enemy_capture_node :GraphNode;
+    var enemy_captured_nodes :Array<GraphNode>;
+
+    var node_entities :Map<GraphNode, game.entities.Node>;
 
     #if with_shader
     var circuits_sprite :Sprite;
@@ -79,6 +85,10 @@ class WorldState extends State {
         capture_time = 0;
         captured_nodes = [];
 
+        enemy_capture_node = null;
+        enemy_capture_time = 0;
+        enemy_captured_nodes = [];
+
         // test
         graph = core.models.Graph.Test2.get_graph();
 
@@ -86,9 +96,14 @@ class WorldState extends State {
 
         var start_node = graph.get_node('start');
         select_node(start_node);
+
+        haxe.Timer.delay(function() {
+            enemy_capture_node = start_node;
+            enemy_capture_time = 5;
+        }, 5000);
     }
 
-    function add_linked_nodes(n :core.models.Graph.Node<String>) {
+    function add_linked_nodes(n :GraphNode) {
         var delay = 0;
         for (l in graph.get_links_for_node(n)) {
             if (nodes.exists(l)) continue;
@@ -103,7 +118,7 @@ class WorldState extends State {
         }
     }
 
-    function create_node_entity(p :Particle, n :core.models.Graph.Node<String>) {
+    function create_node_entity(p :Particle, n :GraphNode) {
         return new game.entities.Node({
             geometry: Luxe.draw.ngon({
                 x: p.position.x,
@@ -212,6 +227,22 @@ class WorldState extends State {
             });
         }
 
+        if (enemy_capture_node != null) {
+            var p = nodes[enemy_capture_node];
+            if (p != null) {
+                Luxe.draw.ngon({
+                    x: p.position.x,
+                    y: p.position.y,
+                    r: NODE_SIZE + (NODE_SIZE * enemy_capture_time * 2),
+                    sides: 6,
+                    angle: 30 + 30 * enemy_capture_time,
+                    color: new Color().rgb(0xFF4136),
+                    solid: false,
+                    immediate: true
+                });
+            }
+        }
+
         for (n in node_entities.keys()) {
             var p = nodes[n];
             var entity = node_entities[n];
@@ -257,6 +288,7 @@ class WorldState extends State {
             if (event.keycode == node_entities[capture_node].key.toLowerCase().charCodeAt(0)) return;
         }
         for (n in graph.get_links_for_node(current)) {
+            if (!node_entities.exists(n)) continue; // if creation delay
             if (event.keycode == node_entities[n].key.toLowerCase().charCodeAt(0)) {
                 var already_captured = (captured_nodes.indexOf(n) >= 0);
                 capture_time = (already_captured ? 0.2 : 1.5);
@@ -270,8 +302,9 @@ class WorldState extends State {
         capture_node = null;
     }
 
-    function select_node(node :core.models.Graph.Node<String>) {
+    function select_node(node :GraphNode) {
         if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
+        enemy_captured_nodes.remove(node);
 
         current = node;
         if (!nodes.exists(node)) {
@@ -302,6 +335,24 @@ class WorldState extends State {
             if (capture_time <= 0) {
                 select_node(capture_node);
                 capture_node = null;
+            }
+        }
+
+        if (enemy_capture_node != null) {
+            enemy_capture_time -= dt;
+            if (enemy_capture_time <= 0) {
+                captured_nodes.remove(enemy_capture_node);
+                node_entities[enemy_capture_node].color.set(0xFF0000);
+                if (enemy_capture_node == current) {
+                    Luxe.renderer.clear_color.set(1, 0, 0, 1);
+                }
+                enemy_captured_nodes.push(enemy_capture_node);
+                var links = graph.get_links_for_node(enemy_capture_node);
+                enemy_capture_node = links.find(function(n) {
+                    return (enemy_captured_nodes.indexOf(n) < 0); // uncaptured link
+                });
+                if (enemy_capture_node == null) enemy_capture_node = core.tools.ArrayTools.random(links);
+                enemy_capture_time = 3;
             }
         }
     }
