@@ -35,6 +35,7 @@ class WorldState extends State {
     var capture_node :GraphNode;
     var captured_nodes :Array<GraphNode>;
 
+    var enemy_in_game :Bool;
     var enemy_current :GraphNode;
     var enemy_capture_time :Float;
     var enemy_capture_node :GraphNode;
@@ -84,6 +85,7 @@ class WorldState extends State {
         capture_time = 0;
         captured_nodes = [];
 
+        enemy_in_game = false;
         enemy_current = null;
         enemy_capture_node = null;
         enemy_capture_time = 0;
@@ -98,14 +100,8 @@ class WorldState extends State {
         select_node(start_node);
 
         haxe.Timer.delay(function() {
-            enemy_current = start_node;
-            enemy_capture_node = start_node;
-            enemy_capture_time = 10;
-            Luxe.renderer.clear_color.tween(enemy_capture_time, { r: 0.4 });
-            Luxe.camera.shake(5);
-            Main.shift = 0.01;
-            luxe.tween.Actuate.tween(Main, 0.3, { shift: 0.1 }).reflect().repeat(1);
-        }, 30000);
+            detected(start_node);
+        }, 60000);
     }
 
     function add_linked_nodes(n :GraphNode) {
@@ -136,7 +132,7 @@ class WorldState extends State {
     }
 
     function create_node_entity(p :Particle, n :GraphNode) {
-        return new game.entities.Node({
+        var entity = new game.entities.Node({
             geometry: Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
@@ -149,6 +145,32 @@ class WorldState extends State {
             value: n.to_string(),
             key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0]
         });
+
+        // Enforced
+        if (n.value == 'gate') {
+            new luxe.Visual({
+                geometry: Luxe.draw.ngon({
+                    r: NODE_SIZE * 1.25,
+                    sides: 6,
+                    angle: 30,
+                    solid: false
+                }),
+                color: entity.color,
+                parent: entity
+            });
+            // new luxe.Visual({
+            //     geometry: Luxe.draw.ngon({
+            //         r: NODE_SIZE * 1.4,
+            //         sides: 6,
+            //         angle: 30,
+            //         solid: false
+            //     }),
+            //     color: entity.color,
+            //     parent: entity
+            // });
+        }
+
+        return entity;
     }
 
     function setup_particles() {
@@ -343,7 +365,7 @@ class WorldState extends State {
             if (event.keycode == node_entities[capture_node].key.toLowerCase().charCodeAt(0)) return;
         }
         for (n in graph.get_links_for_node(current)) {
-            if (n == enemy_current || n == enemy_capture_node) continue; // cannot select node currently being captured by enemy
+            if (enemy_in_game && (n == enemy_current || n == enemy_capture_node)) continue; // cannot select node currently being captured by enemy
             if (!node_entities.exists(n)) continue; // if creation delay
             if (event.keycode == node_entities[n].key.toLowerCase().charCodeAt(0)) {
                 var already_captured = (captured_nodes.indexOf(n) >= 0);
@@ -355,11 +377,12 @@ class WorldState extends State {
     }
 
     override function onkeyup(event :luxe.Input.KeyEvent) {
+        if (node_entities.exists(capture_node)) node_entities[capture_node].set_capture_text('');
         capture_node = null;
     }
 
     function select_node(node :GraphNode) {
-        if (node == enemy_current || node == enemy_capture_node) return; // cannot select node currently being captured by enemy
+        if (enemy_in_game && (node == enemy_current || node == enemy_capture_node)) return; // cannot select node currently being captured by enemy
 
         if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
         enemy_captured_nodes.remove(node);
@@ -385,6 +408,18 @@ class WorldState extends State {
         luxe.tween.Actuate.tween(Main, 0.4, { bloom: 0.4 });
     }
 
+    function detected(node :GraphNode) {
+        if (enemy_in_game || enemy_capture_node != null || enemy_current != null) return;
+
+        enemy_current = node;
+        enemy_capture_node = node;
+        enemy_capture_time = 10;
+        Luxe.renderer.clear_color.tween(enemy_capture_time, { r: 0.4 });
+        Luxe.camera.shake(5);
+        Main.shift = 0.01;
+        luxe.tween.Actuate.tween(Main, 0.3, { shift: 0.1 }).reflect().repeat(1);
+    }
+
     var angle :Float = 0;
     override function update(dt :Float) {
         s.tick(dt * 10); // Hack to multiply dt
@@ -403,8 +438,24 @@ class WorldState extends State {
 
         if (capture_node != null && capture_node != current) {
             capture_time -= dt;
+            var capture_entity = node_entities[capture_node];
+            var captured_by_player = (captured_nodes.indexOf(capture_node) > -1);
+
+            if (!enemy_in_game) {
+                if (captured_by_player) {
+                    capture_entity.set_capture_text('0%');
+                } else {
+                    capture_entity.set_capture_text('15%');
+                }
+            }
             if (capture_time <= 0) {
+                capture_entity.set_capture_text('');
                 select_node(capture_node);
+
+                if (!captured_by_player && Math.random() < 0.15) {
+                    detected(capture_node);
+                }
+
                 capture_node = null;
             }
         }
@@ -412,6 +463,7 @@ class WorldState extends State {
         if (enemy_capture_node != null) {
             enemy_capture_time -= dt;
             if (enemy_capture_time <= 0) {
+                enemy_in_game = true;
                 Luxe.camera.shake(5);
                 luxe.tween.Actuate.tween(Main, 0.3, { shift: 0.1 }).reflect().repeat(1);
 
