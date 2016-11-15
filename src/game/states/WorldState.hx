@@ -28,7 +28,6 @@ class WorldState extends State {
     var nodes :Map<GraphNode, Particle>;
     var graph :core.models.Graph<String>;
 
-    // var link_keys :Map<Spring, Int>;
     var available_keys :Array<String>;
 
     var current :GraphNode;
@@ -77,9 +76,8 @@ class WorldState extends State {
 
         nodes = new Map();
         node_entities = new Map();
-        // link_keys = new Map();
-        // var key_list = 'ABCDEFGHIJKLMNOPQRSTUVXYZ';
-        available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split(''); //[ for (c in key_list.split()) c ];
+
+        available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split('');
 
         current = null;
         capture_node = null;
@@ -104,6 +102,9 @@ class WorldState extends State {
             enemy_capture_node = start_node;
             enemy_capture_time = 10;
             Luxe.renderer.clear_color.tween(enemy_capture_time, { r: 0.4 });
+            Luxe.camera.shake(5);
+            Main.shift = 0.01;
+            luxe.tween.Actuate.tween(Main, 0.3, { shift: 0.1 }).reflect().repeat(1);
         }, 30000);
     }
 
@@ -202,6 +203,8 @@ class WorldState extends State {
     override function onenter(_) {
         Luxe.camera.zoom = 0.1;
         luxe.tween.Actuate.tween(Luxe.camera, 0.5, { zoom: 1 });
+
+
 
         // overlay_filter = new Sprite({
         //     pos: Luxe.screen.mid.clone(),
@@ -372,13 +375,26 @@ class WorldState extends State {
         for (node in captured_nodes) {
             node_entities[node].color.rgb(0x2ECC40); // .rgb(0x44FF44);
         }
-        node_entities[current].color.rgb(0xF012BE); // .rgb(0xDD00FF);
+        var current_entity = node_entities[current];
+        current_entity.color.rgb(0xF012BE); // .rgb(0xDD00FF);
         add_linked_nodes(node);
-        Luxe.camera.focus(new Vector(p.position.x, p.position.y), 0.3);
+
+        // Luxe.camera.focus(current_entity.pos, 0.3);
+        Luxe.camera.shake(2);
+        Main.bloom = 0.6;
+        luxe.tween.Actuate.tween(Main, 0.4, { bloom: 0.4 });
     }
 
+    var angle :Float = 0;
     override function update(dt :Float) {
         s.tick(dt * 10); // Hack to multiply dt
+
+        var current_entity = node_entities[current];
+        Luxe.camera.focus(current_entity.pos, 0.1);
+
+        angle += dt;
+
+        Luxe.camera.rotation.setFromAxisAngle(new Vector(1, 1, 0), Math.cos(angle) * 0.2);
 
         #if with_shader
         circuits_sprite.pos = Luxe.camera.center.clone();
@@ -397,6 +413,7 @@ class WorldState extends State {
             enemy_capture_time -= dt;
             if (enemy_capture_time <= 0) {
                 Luxe.camera.shake(5);
+                luxe.tween.Actuate.tween(Main, 0.3, { shift: 0.1 }).reflect().repeat(1);
 
                 enemy_current = enemy_capture_node;
 
@@ -405,7 +422,9 @@ class WorldState extends State {
                     node_entities[enemy_capture_node].color.set(0xFF0000);
                 }
                 if (enemy_capture_node == current) {
-                    Luxe.renderer.clear_color.set(1, 0, 0, 1);
+                    Luxe.camera.shake(10);
+                    Luxe.renderer.clear_color.tween(0.3, { r: 0.9 });
+                    luxe.tween.Actuate.tween(Main, 0.3, { shift: 0.2, bloom: 0.6 });
                     enemy_capture_node = null;
                     capture_node = null;
                     return;

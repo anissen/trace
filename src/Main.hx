@@ -12,6 +12,9 @@ class Main extends luxe.Game {
     var fullscreen :Bool = false;
     var postprocess :PostProcess;
 
+    static public var bloom :Float = 0.0;
+    static public var shift :Float = 0.0;
+
     override function config(config :luxe.GameConfig) {
         config.render.antialiasing = 4;
 
@@ -37,6 +40,8 @@ class Main extends luxe.Game {
 
         var shader = Luxe.resources.shader('postprocess');
         shader.set_vector2('resolution', Luxe.screen.size);
+        shader.set_float('bloom', 0.4);
+        shader.set_float('shift', 0.0);
         postprocess = new PostProcess(shader);
         // postprocess.toggle(); // disable shader for now
 
@@ -68,7 +73,7 @@ class Main extends luxe.Game {
         DC.init(30, 'DOWN', theme);
         // DC.log("This text will be logged.");
         DC.registerFunction(function() { postprocess.toggle(); }, "toggle_shader");
-        // DC.registerObject(this, "myobject");
+        DC.registerObject(Main, "Main");
         DC.registerObject(worldstate, "world");
         // DC.registerClass(Math, "Math");
     }
@@ -83,7 +88,11 @@ class Main extends luxe.Game {
     }
 
     override function update(dt :Float) {
-        if (postprocess != null) postprocess.shader.set_float('time', Luxe.core.tick_start + dt);
+        if (postprocess != null) {
+            postprocess.shader.set_float('time', Luxe.core.tick_start + dt);
+            postprocess.shader.set_float('bloom', bloom);
+            postprocess.shader.set_float('shift', shift);
+        }
     }
 
     override function onpostrender() {
