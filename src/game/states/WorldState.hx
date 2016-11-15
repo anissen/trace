@@ -132,6 +132,17 @@ class WorldState extends State {
     }
 
     function create_node_entity(p :Particle, n :GraphNode) {
+        var detection = 10;
+        var capture_time = 1.5;
+        switch (n.value) {
+            case 'datastore':
+                detection = 20;
+                capture_time = 2;
+            case 'node':
+                detection = 10;
+                capture_time = 1;
+        }
+
         var entity = new game.entities.Node({
             geometry: Luxe.draw.ngon({
                 x: p.position.x,
@@ -143,7 +154,9 @@ class WorldState extends State {
             }),
             depth: 10,
             value: n.to_string(),
-            key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0]
+            key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0],
+            detection: detection,
+            capture_time: capture_time
         });
 
         // Enforced
@@ -367,9 +380,10 @@ class WorldState extends State {
         for (n in graph.get_links_for_node(current)) {
             if (enemy_in_game && (n == enemy_current || n == enemy_capture_node)) continue; // cannot select node currently being captured by enemy
             if (!node_entities.exists(n)) continue; // if creation delay
-            if (event.keycode == node_entities[n].key.toLowerCase().charCodeAt(0)) {
+            var entity = node_entities[n];
+            if (event.keycode == entity.key.toLowerCase().charCodeAt(0)) {
                 var already_captured = (captured_nodes.indexOf(n) >= 0);
-                capture_time = (already_captured ? 0.2 : 1.5);
+                capture_time = (already_captured ? 0.2 : entity.capture_time);
                 capture_node = n;
                 return;
             }
@@ -445,14 +459,14 @@ class WorldState extends State {
                 if (captured_by_player) {
                     capture_entity.set_capture_text('0%');
                 } else {
-                    capture_entity.set_capture_text('15%');
+                    capture_entity.set_capture_text(capture_entity.detection + '%');
                 }
             }
             if (capture_time <= 0) {
                 capture_entity.set_capture_text('');
                 select_node(capture_node);
 
-                if (!captured_by_player && Math.random() < 0.15) {
+                if (!captured_by_player && Math.random() < capture_entity.detection / 100) {
                     detected(capture_node);
                 }
 

@@ -8,13 +8,17 @@ import luxe.Text;
 
 typedef NodeOptions = {
     > luxe.options.SpriteOptions,
+    key :String,
     value :String,
-    key :String
+    detection :Float,
+    capture_time :Float
 }
 
 class Node extends Visual {
     public var key :String;
     public var value :String;
+    public var detection :Float;
+    public var capture_time :Float;
     public var text :Text;
     public var description :Text;
 
@@ -22,9 +26,12 @@ class Node extends Visual {
         super(options);
 
         this.key = options.key;
+        this.value = options.value;
+        this.detection = options.detection;
+        this.capture_time = options.capture_time;
 
         text = new Text({
-            text: options.key, // + '\n' + options.value,
+            text: options.key,
             color: new Color(0, 0, 0),
             align: center,
             align_vertical: center,
