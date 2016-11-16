@@ -34,12 +34,14 @@ class WorldState extends State {
     var capture_time :Float;
     var capture_node :GraphNode;
     var captured_nodes :Array<GraphNode>;
+    var captured_keys :Array<GraphNode>;
 
     var enemy_in_game :Bool;
     var enemy_current :GraphNode;
     var enemy_capture_time :Float;
     var enemy_capture_node :GraphNode;
     var enemy_captured_nodes :Array<GraphNode>;
+
 
     var node_entities :Map<GraphNode, game.entities.Node>;
 
@@ -84,6 +86,7 @@ class WorldState extends State {
         capture_node = null;
         capture_time = 0;
         captured_nodes = [];
+        captured_keys = [];
 
         enemy_in_game = false;
         enemy_current = null;
@@ -92,7 +95,7 @@ class WorldState extends State {
         enemy_captured_nodes = [];
 
         // test
-        graph = core.models.Graph.Test2.get_graph();
+        graph = core.models.Graph.Factory.create_graph();
 
         setup_particles();
 
@@ -134,10 +137,16 @@ class WorldState extends State {
     function create_node_entity(p :Particle, n :GraphNode) {
         var detection = 10;
         var capture_time = 1.5;
+        var is_locked = false;
+        var unlocks = null;
         switch (n.value) {
             case 'datastore':
                 detection = 20;
                 capture_time = 2;
+            case 'lock':
+                is_locked = true;
+            case 'key':
+                unlocks = graph.get_key_link_for_node(n);
             case 'node':
                 detection = 10;
                 capture_time = 1;
@@ -156,7 +165,9 @@ class WorldState extends State {
             value: n.to_string(),
             key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0],
             detection: detection,
-            capture_time: capture_time
+            capture_time: capture_time,
+            is_locked: is_locked,
+            unlocks: unlocks
         });
 
         // Enforced
@@ -265,7 +276,7 @@ class WorldState extends State {
             Luxe.draw.line({
                 p0: new Vector(a.position.x, a.position.y),
                 p1: new Vector(b.position.x, b.position.y),
-                // color: new Color().rgb(0x00DD11),
+                // color: new Color(),
                 immediate: true,
                 depth: 5
             });
@@ -380,9 +391,10 @@ class WorldState extends State {
             if (event.keycode == node_entities[capture_node].key.toLowerCase().charCodeAt(0)) return;
         }
         for (n in graph.get_links_for_node(current)) {
-            if (enemy_in_game && (n == enemy_current || n == enemy_capture_node)) continue; // cannot select node currently being captured by enemy
+            if (enemy_in_game && (n == enemy_current)) continue; // cannot select enemy node
             if (!node_entities.exists(n)) continue; // if creation delay
             var entity = node_entities[n];
+            if (entity.is_locked && captured_keys.indexOf(n) == -1) continue;
             if (event.keycode == entity.key.toLowerCase().charCodeAt(0)) {
                 var already_captured = (captured_nodes.indexOf(n) >= 0);
                 capture_time = (already_captured ? 0.2 : entity.capture_time);
@@ -398,7 +410,7 @@ class WorldState extends State {
     }
 
     function select_node(node :GraphNode) {
-        if (enemy_in_game && (node == enemy_current || node == enemy_capture_node)) return; // cannot select node currently being captured by enemy
+        if (enemy_in_game && (node == enemy_current)) return; // cannot select enemy node
 
         if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
         enemy_captured_nodes.remove(node);
@@ -417,6 +429,14 @@ class WorldState extends State {
         var current_entity = node_entities[current];
         current_entity.color.rgb(0xF012BE); // .rgb(0xDD00FF);
         add_linked_nodes(node);
+
+        // unlock node with the current key
+        if (current_entity.unlocks != null && captured_keys.indexOf(current_entity.unlocks) == -1) {
+            captured_keys.push(current_entity.unlocks);
+        }
+        // if (current_entity.unlocks != null && node_entities.exists(current_entity.unlocks)) {
+        //     node_entities[current_entity.unlocks].is_locked = false;
+        // }
 
         // Luxe.camera.focus(current_entity.pos, 0.3);
         Luxe.camera.shake(2);

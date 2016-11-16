@@ -8,3 +8,8 @@
 [ ] Sound effects
 [ ] Tutorial
 [ ] Menu
+
+
+Misc:
+[ ] Make a player abstraction
+[ ] Put aux. data structures into Node

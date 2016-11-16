@@ -19,10 +19,12 @@ class Node<T> {
 class Graph<T> {
     var nodes :Array<Node<T>>;
     var links :Map<Node<T>, Array<Node<T>>>;
+    var key_ref :Map<Node<T>, Node<T>>;
 
     public function new() {
         nodes = [];
         links = new Map();
+        key_ref = new Map();
     }
 
     public function create_node(value :T, ?id :Int) :Node<T> {
@@ -64,6 +66,14 @@ class Graph<T> {
 
     public function get_linked_node_with_value(node :Node<T>, value :T) {
         return links[node].find(function(l) { return (l.value == value); });
+    }
+
+    public function key_link(a :Node<T>, b :Node<T>) {
+        key_ref[a] = b;
+    }
+
+    public function get_key_link_for_node(node :Node<T>) {
+        return key_ref[node];
     }
 
     public function mark_pattern(pattern :Graph<T>) :Bool {
@@ -187,6 +197,83 @@ class Graph<T> {
         trace(print_recursive_walk(start));
     }
 
+}
+
+class Factory {
+    public static function create_graph() {
+        var g = new Graph();
+        var start = g.create_node('start');
+        var n1 = g.create_node('node');
+        var n2 = g.create_node('node');
+        var key = g.create_node('key');
+        var lock = g.create_node('lock');
+        var ds = g.create_node('datastore');
+        g.link(start, n1);
+        g.link(n1, n2);
+        g.link(n1, key);
+        g.link(n2, lock);
+        g.link(lock, ds);
+        g.key_link(key, lock);
+
+        // var g = new Graph();
+        // var start = g.create_node('start');
+        // var c1 = g.create_node('Chain');
+        // var c2 = g.create_node('Chain');
+        // var key = g.create_node('key');
+        // var c3 = g.create_node('Chain');
+        // var lock = g.create_node('lock');
+        // var ds = g.create_node('datastore');
+        //
+        // var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
+        // pattern_replacements.push({ pattern: get_graph_pattern(), replacements: [get_graph_expansion(), get_graph_shortcut(), get_graph_replacement(), get_graph_replacement2()]});
+        // pattern_replacements.push({ pattern: get_graph_pattern_lock(), replacements: [get_graph_replace_lock()]});
+        //
+        // var replacements = 0;
+        // var max_replacements = 10;
+        // while (replacements < max_replacements) {
+        //     var replacements_this_pass = 0;
+        //     core.tools.ArrayTools.shuffle(pattern_replacements);
+        //     for (pair in pattern_replacements) {
+        //         core.tools.ArrayTools.shuffle(pair.replacements);
+        //         for (replacement in pair.replacements) {
+        //             if (g.replace(pair.pattern, replacement)) {
+        //                 trace('Made a replacement with:');
+        //                 trace('Pattern:'); pair.pattern.print();
+        //                 trace('Replacement:'); replacement.print();
+        //                 replacements++;
+        //                 replacements_this_pass++;
+        //             }
+        //             if (replacements >= max_replacements) break;
+        //         }
+        //         if (replacements >= max_replacements) break;
+        //     }
+        //     if (replacements_this_pass == 0) {
+        //         trace('No more available patterns found!');
+        //         break;
+        //     }
+        // }
+        // trace('Made $replacements replacements!');
+
+        return g;
+    }
+
+    static function get_graph_pattern() {
+        var g = new Graph();
+        var A = g.create_node('Chain', 1);
+        var B = g.create_node('room', 2);
+        g.link(A, B);
+        return g;
+    }
+
+    static function get_graph_replacement() {
+        var g = new Graph();
+        var A = g.create_node('room', 1);
+        var B = g.create_node('room_locked', 2);
+        var b = g.create_node('room_key', 3);
+        g.link(A, B);
+        g.link(A, b);
+        return g;
+    }
 }
 
 class Test {
