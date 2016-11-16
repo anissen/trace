@@ -216,7 +216,11 @@ class WorldState extends State {
     }
 
     function makeEdgeBetween(a :Particle, b :Particle) {
-        s.makeSpring(a, b, EDGE_STRENGTH, EDGE_STRENGTH, EDGE_LENGTH);
+        var spring = s.makeSpring(a, b, 0, EDGE_STRENGTH, EDGE_LENGTH);
+
+        // tween spring strength from 0 to EDGE_STRENGTH over 0.5 seconds
+        luxe.tween.Actuate.update(spring.setStrength, 0.5, [0], [EDGE_STRENGTH]);
+
         // var key = available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0];
         // link_keys[spring] = key.charAt(0);
     }
@@ -232,14 +236,12 @@ class WorldState extends State {
     function add_edge(p :Particle, q :Particle) {
         addSpacersToNode(p, q);
         makeEdgeBetween(p, q);
-        p.position = new Vector3D(q.position.x -1 + 2 * Math.random(), q.position.y -1 + 2 * Math.random(), 0);
+        p.position = new Vector3D(q.position.x - 10 + 20 * Math.random(), q.position.y - 10 + 20 * Math.random(), 0);
     }
 
     override function onenter(_) {
         Luxe.camera.zoom = 0.1;
         luxe.tween.Actuate.tween(Luxe.camera, 0.5, { zoom: 1 });
-
-
 
         // overlay_filter = new Sprite({
         //     pos: Luxe.screen.mid.clone(),
