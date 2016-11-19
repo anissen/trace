@@ -7,7 +7,7 @@ import luxe.Sprite;
 import luxe.Color;
 import luxe.Text;
 
-typedef GraphNode = core.models.Graph.Node<String>;
+// typedef GraphNode = core.models.Graph.Node<String>;
 
 typedef NodeOptions = {
     > luxe.options.SpriteOptions,
@@ -15,8 +15,8 @@ typedef NodeOptions = {
     value :String,
     detection :Float,
     capture_time :Float,
-    is_locked :Bool,
-    unlocks :GraphNode
+    // is_locked :Bool,
+    // unlocks :GraphNode
 }
 
 class Node extends Visual {
@@ -26,8 +26,8 @@ class Node extends Visual {
     public var capture_time :Float;
     public var text :Text;
     public var description :Text;
-    public var is_locked :Bool;
-    public var unlocks :GraphNode;
+    // public var is_locked :Bool;
+    // public var unlocks :GraphNode;
 
     public function new(options :NodeOptions) {
         super(options);
@@ -36,8 +36,8 @@ class Node extends Visual {
         this.value = options.value;
         this.detection = options.detection;
         this.capture_time = options.capture_time;
-        this.is_locked = options.is_locked;
-        this.unlocks = options.unlocks;
+        // this.is_locked = options.is_locked;
+        // this.unlocks = options.unlocks;
 
         if (texture != null) {
             new Sprite({

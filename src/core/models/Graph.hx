@@ -16,15 +16,37 @@ class Node<T> {
     }
 }
 
+enum ReferenceType {
+    Edge(bidirectional :Bool);
+    Key;
+}
+
+class Reference<T, R> {
+    public var a :Node<T>;
+    public var b :Node<T>;
+    public var type :R;
+    // public var bidirectional :Bool;
+
+    public function new(a :Node<T>, b :Node<T>, type: R /*, bidirectional :Bool = true */) {
+        this.a = a;
+        this.b = b;
+        this.type = type;
+        // this.bidirectional = bidirectional;
+    }
+}
+
 class Graph<T> {
     var nodes :Array<Node<T>>;
     var links :Map<Node<T>, Array<Node<T>>>;
     var key_ref :Map<Node<T>, Node<T>>;
+    var references :Array<Reference<T, ReferenceType>>;
 
     public function new() {
         nodes = [];
         links = new Map();
         key_ref = new Map();
+
+        references = [];
     }
 
     public function create_node(value :T, ?id :Int) :Node<T> {
@@ -51,29 +73,67 @@ class Graph<T> {
     }
 
     public function link(a :Node<T>, b :Node<T>) { // bidirectional link
-        if (links[a].indexOf(b) < 0) links[a].push(b);
-        if (links[b].indexOf(a) < 0) links[b].push(a);
+        references.push(new Reference(a, b, Edge(true)));
+        // if (links[a].indexOf(b) < 0) links[a].push(b);
+        // if (links[b].indexOf(a) < 0) links[b].push(a);
     }
 
     public function unlink(a :Node<T>, b :Node<T>) {
-        links[a].remove(b);
-        links[b].remove(a);
+        for (r in references) {
+            if ((r.a == a || r.b == a) && (r.a == b || r.b == b)) {
+                references.remove(r);
+            }
+        }
+        // links[a].remove(b);
+        // links[b].remove(a);
     }
 
-    public function get_links_for_node(node :Node<T>) {
-        return links[node];
-    }
+    // public function get_edges_for_node(node)(node :Node<T>) {
+    //     return links[node];
+    // }
 
-    public function get_linked_node_with_value(node :Node<T>, value :T) {
-        return links[node].find(function(l) { return (l.value == value); });
-    }
+    // public function get_linked_node_with_value(node :Node<T>, value :T) {
+    //     return links[node].find(function(l) { return (l.value == value); });
+    // }
 
     public function key_link(a :Node<T>, b :Node<T>) {
-        key_ref[a] = b;
+        references.push(new Reference(a, b, Key));
+        // key_ref[a] = b;
     }
 
-    public function get_key_link_for_node(node :Node<T>) {
-        return key_ref[node];
+    // public function get_key_link_for_node(node :Node<T>) {
+    //     return key_ref[node];
+    // }
+
+    public function get_references() {
+        return references;
+    }
+
+    public function get_edges() {
+        return references.filter(function(r) {
+            return switch (r.type) {
+                case Edge(_): true;
+                case _: false;
+            }
+        });
+    }
+
+    public function get_edges_for_node(node :Node<T>) {
+        return references
+            .filter(function(r) {
+                return switch (r.type) {
+                    case Edge(false): (r.a == node);                // unidirectional
+                    case Edge(true): (r.a == node || r.b == node);  // bidirectional
+                    case _: false;
+                }
+            })
+            .map(function(r) { return (node == r.a ? r.b : r.a); });
+    }
+
+    public function get_keys_for_node(node :Node<T>) {
+        return references
+            .filter(function(r) { return (r.type == Key && r.b == node); })
+            .map(function(r) { return r.a; });
     }
 
     public function mark_pattern(pattern :Graph<T>) :Bool {
@@ -89,7 +149,7 @@ class Graph<T> {
         var current_node = first;
         current_node.id = pattern.nodes[0].id;
         for (i in 1 ... pattern.nodes.length) {
-            current_node = get_linked_node_with_value(current_node, pattern.nodes[i].value);
+            current_node = get_edges_for_node(current_node).find(function(n) { return (n.value == pattern.nodes[i].value); });
             if (current_node == null) return false;
             current_node.id = pattern.nodes[i].id;
         }
@@ -123,7 +183,7 @@ class Graph<T> {
         var marked = nodes.filter(function(n) { return (n.id != null); });
         for (n in marked) {
             // removed links to all other marked
-            for (l in get_links_for_node(n)) {
+            for (l in get_edges_for_node(n)) {
                 if (l.id != null) {
                     unlink(n, l);
                 }
@@ -152,7 +212,7 @@ class Graph<T> {
         // trace('Step 6: Add edges');
         for (r in replacement.nodes) {
             var node = get_node_from_id(r.id);
-            for (l in replacement.get_links_for_node(r)) {
+            for (l in replacement.get_edges_for_node(r)) {
                 link(node, get_node_from_id(l.id));
             }
         }
@@ -171,7 +231,7 @@ class Graph<T> {
     public function print() {
         for (n in nodes) {
             // trace('[${n.to_string()}]');
-            for (l in get_links_for_node(n)) trace('${n.to_string()} -> ${l.to_string()}');
+            for (l in get_edges_for_node(n)) trace('${n.to_string()} -> ${l.to_string()}');
         }
     }
 
@@ -186,7 +246,7 @@ class Graph<T> {
             visited.push(n);
 
             var str = '';
-            for (l in get_links_for_node(n)) {
+            for (l in get_edges_for_node(n)) {
                 if (visited.indexOf(l) >= 0) continue;
                 str += n.to_string() + ' -> ' + l.to_string() + '\n';
                 str += print_recursive_walk(l) + '\n';

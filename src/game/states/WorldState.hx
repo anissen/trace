@@ -34,7 +34,7 @@ class WorldState extends State {
     var capture_time :Float;
     var capture_node :GraphNode;
     var captured_nodes :Array<GraphNode>;
-    var captured_keys :Array<GraphNode>;
+    // var captured_keys :Array<GraphNode>;
 
     var enemy_in_game :Bool;
     var enemy_current :GraphNode;
@@ -87,7 +87,7 @@ class WorldState extends State {
         capture_node = null;
         capture_time = 0;
         captured_nodes = [];
-        captured_keys = [];
+        // captured_keys = [];
 
         got_data = false;
 
@@ -112,7 +112,7 @@ class WorldState extends State {
 
     function add_linked_nodes(n :GraphNode) {
         var delay = 0;
-        for (l in graph.get_links_for_node(n)) {
+        for (l in graph.get_edges_for_node(n)) {
             if (nodes.exists(l)) {
                 var link_node = true;
                 var p = nodes[l];
@@ -140,8 +140,8 @@ class WorldState extends State {
     function create_node_entity(p :Particle, n :GraphNode) {
         var detection = 10;
         var capture_time = 1.5;
-        var is_locked = false;
-        var unlocks = null;
+        // var is_locked = false;
+        // var unlocks = null;
         var texture = null;
         switch (n.value) {
             case 'datastore':
@@ -149,9 +149,9 @@ class WorldState extends State {
                 capture_time = 2;
                 texture = Luxe.resources.texture('assets/images/database.png');
             case 'lock':
-                is_locked = true;
+                // is_locked = true;
             case 'key':
-                unlocks = graph.get_key_link_for_node(n);
+                // unlocks = graph.get_key_for_node(n);
             case 'node':
                 detection = 10;
                 capture_time = 1;
@@ -172,8 +172,8 @@ class WorldState extends State {
             key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0],
             detection: detection,
             capture_time: capture_time,
-            is_locked: is_locked,
-            unlocks: unlocks
+            // is_locked: is_locked,
+            // unlocks: unlocks
         });
 
         // Enforced
@@ -267,19 +267,32 @@ class WorldState extends State {
 
     override function onrender() {
         overlay_filter.pos = Luxe.camera.view.center.clone();
-        for (i in 0 ... s.numberOfSprings()) {
-            var e :Spring = s.getSpring(i);
-            var a :Particle = e.getOneEnd();
-            var b :Particle = e.getTheOtherEnd();
 
-            Luxe.draw.line({
-                p0: new Vector(a.position.x, a.position.y),
-                p1: new Vector(b.position.x, b.position.y),
-                // color: new Color(),
+        for (r in graph.get_edges()) {
+            if (!node_entities.exists(r.a) || !node_entities.exists(r.b)) continue;
+
+            var line = Luxe.draw.line({
+                p0: node_entities[r.a].pos,
+                p1: node_entities[r.b].pos,
                 immediate: true,
                 depth: 5
             });
+            if (is_locked(r.b)) line.color.a = 0.3;
         }
+
+        // for (i in 0 ... s.numberOfSprings()) {
+        //     var e :Spring = s.getSpring(i);
+        //     var a :Particle = e.getOneEnd();
+        //     var b :Particle = e.getTheOtherEnd();
+        //
+        //     Luxe.draw.line({
+        //         p0: new Vector(a.position.x, a.position.y),
+        //         p1: new Vector(b.position.x, b.position.y),
+        //         // color: new Color(),
+        //         immediate: true,
+        //         depth: 5
+        //     });
+        // }
 
         if (current != null) {
             var p = nodes[current];
@@ -360,16 +373,27 @@ class WorldState extends State {
         return result;
     }
 
+    function is_locked(n :GraphNode) {
+        var required_keys = graph.get_keys_for_node(n);
+        for (key in required_keys) {
+            if (captured_nodes.indexOf(key) == -1) return true;
+        }
+        return false;
+    }
+
     override function onkeydown(event :luxe.Input.KeyEvent) {
         if (capture_node != null) {
             // to avoid retriggering the capture
             if (event.keycode == node_entities[capture_node].key.toLowerCase().charCodeAt(0)) return;
         }
-        for (n in graph.get_links_for_node(current)) {
+        for (n in graph.get_edges_for_node(current)) {
             if (enemy_in_game && (n == enemy_current)) continue; // cannot select enemy node
             if (!node_entities.exists(n)) continue; // if creation delay
             var entity = node_entities[n];
-            if (entity.is_locked && captured_keys.indexOf(n) == -1) continue;
+
+            if (is_locked(n)) continue;
+
+            // if (entity.is_locked && captured_keys.indexOf(n) == -1) continue;
             if (event.keycode == entity.key.toLowerCase().charCodeAt(0)) {
                 var already_captured = (captured_nodes.indexOf(n) >= 0);
                 capture_time = (already_captured ? 0.2 : entity.capture_time);
@@ -406,9 +430,9 @@ class WorldState extends State {
         add_linked_nodes(node);
 
         // unlock node with the current key
-        if (current_entity.unlocks != null && captured_keys.indexOf(current_entity.unlocks) == -1) {
-            captured_keys.push(current_entity.unlocks);
-        }
+        // if (current_entity.unlocks != null && captured_keys.indexOf(current_entity.unlocks) == -1) {
+        //     captured_keys.push(current_entity.unlocks);
+        // }
 
         if (current.value == 'datastore') {
             got_data = true;
@@ -501,7 +525,7 @@ class WorldState extends State {
                     return;
                 }
                 enemy_captured_nodes.push(enemy_capture_node);
-                var links = graph.get_links_for_node(enemy_capture_node);
+                var links = graph.get_edges_for_node(enemy_capture_node);
                 enemy_capture_node = links.find(function(n) {
                     return (enemy_captured_nodes.indexOf(n) < 0); // uncaptured link
                 });
