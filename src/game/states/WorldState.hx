@@ -34,7 +34,6 @@ class WorldState extends State {
     var capture_time :Float;
     var capture_node :GraphNode;
     var captured_nodes :Array<GraphNode>;
-    // var captured_keys :Array<GraphNode>;
 
     var enemy_in_game :Bool;
     var enemy_current :GraphNode;
@@ -87,7 +86,6 @@ class WorldState extends State {
         capture_node = null;
         capture_time = 0;
         captured_nodes = [];
-        // captured_keys = [];
 
         got_data = false;
 
@@ -140,18 +138,12 @@ class WorldState extends State {
     function create_node_entity(p :Particle, n :GraphNode) {
         var detection = 10;
         var capture_time = 1.5;
-        // var is_locked = false;
-        // var unlocks = null;
         var texture = null;
         switch (n.value) {
             case 'datastore':
                 detection = 20;
                 capture_time = 2;
                 texture = Luxe.resources.texture('assets/images/database.png');
-            case 'lock':
-                // is_locked = true;
-            case 'key':
-                // unlocks = graph.get_key_for_node(n);
             case 'node':
                 detection = 10;
                 capture_time = 1;
@@ -171,9 +163,7 @@ class WorldState extends State {
             value: n.to_string(),
             key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0],
             detection: detection,
-            capture_time: capture_time,
-            // is_locked: is_locked,
-            // unlocks: unlocks
+            capture_time: capture_time
         });
 
         // Enforced
@@ -227,9 +217,6 @@ class WorldState extends State {
 
         // tween spring strength from 0 to EDGE_STRENGTH over 0.5 seconds
         luxe.tween.Actuate.update(spring.setStrength, 0.5, [0], [EDGE_STRENGTH]);
-
-        // var key = available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0];
-        // link_keys[spring] = key.charAt(0);
     }
 
     function initialize() {
@@ -279,20 +266,6 @@ class WorldState extends State {
             });
             if (is_locked(r.b)) line.color.a = 0.3;
         }
-
-        // for (i in 0 ... s.numberOfSprings()) {
-        //     var e :Spring = s.getSpring(i);
-        //     var a :Particle = e.getOneEnd();
-        //     var b :Particle = e.getTheOtherEnd();
-        //
-        //     Luxe.draw.line({
-        //         p0: new Vector(a.position.x, a.position.y),
-        //         p1: new Vector(b.position.x, b.position.y),
-        //         // color: new Color(),
-        //         immediate: true,
-        //         depth: 5
-        //     });
-        // }
 
         if (current != null) {
             var p = nodes[current];
@@ -389,11 +362,9 @@ class WorldState extends State {
         for (n in graph.get_edges_for_node(current)) {
             if (enemy_in_game && (n == enemy_current)) continue; // cannot select enemy node
             if (!node_entities.exists(n)) continue; // if creation delay
-            var entity = node_entities[n];
-
             if (is_locked(n)) continue;
 
-            // if (entity.is_locked && captured_keys.indexOf(n) == -1) continue;
+            var entity = node_entities[n];
             if (event.keycode == entity.key.toLowerCase().charCodeAt(0)) {
                 var already_captured = (captured_nodes.indexOf(n) >= 0);
                 capture_time = (already_captured ? 0.2 : entity.capture_time);
@@ -429,11 +400,6 @@ class WorldState extends State {
         current_entity.color.rgb(0xF012BE); // .rgb(0xDD00FF);
         add_linked_nodes(node);
 
-        // unlock node with the current key
-        // if (current_entity.unlocks != null && captured_keys.indexOf(current_entity.unlocks) == -1) {
-        //     captured_keys.push(current_entity.unlocks);
-        // }
-
         if (current.value == 'datastore') {
             got_data = true;
         } else if (current.value == 'start' && got_data) {
@@ -441,11 +407,6 @@ class WorldState extends State {
             Luxe.renderer.clear_color.tween(1, { g: 1 });
         }
 
-        // if (current_entity.unlocks != null && node_entities.exists(current_entity.unlocks)) {
-        //     node_entities[current_entity.unlocks].is_locked = false;
-        // }
-
-        // Luxe.camera.focus(current_entity.pos, 0.3);
         Luxe.camera.shake(2);
         Main.bloom = 0.6;
         luxe.tween.Actuate.tween(Main, 0.4, { bloom: 0.4 });

@@ -25,13 +25,11 @@ class Reference<T, R> {
     public var a :Node<T>;
     public var b :Node<T>;
     public var type :R;
-    // public var bidirectional :Bool;
 
-    public function new(a :Node<T>, b :Node<T>, type: R /*, bidirectional :Bool = true */) {
+    public function new(a :Node<T>, b :Node<T>, type: R) {
         this.a = a;
         this.b = b;
         this.type = type;
-        // this.bidirectional = bidirectional;
     }
 }
 
@@ -74,8 +72,6 @@ class Graph<T> {
 
     public function link(a :Node<T>, b :Node<T>) { // bidirectional link
         references.push(new Reference(a, b, Edge(true)));
-        // if (links[a].indexOf(b) < 0) links[a].push(b);
-        // if (links[b].indexOf(a) < 0) links[b].push(a);
     }
 
     public function unlink(a :Node<T>, b :Node<T>) {
@@ -84,26 +80,11 @@ class Graph<T> {
                 references.remove(r);
             }
         }
-        // links[a].remove(b);
-        // links[b].remove(a);
     }
-
-    // public function get_edges_for_node(node)(node :Node<T>) {
-    //     return links[node];
-    // }
-
-    // public function get_linked_node_with_value(node :Node<T>, value :T) {
-    //     return links[node].find(function(l) { return (l.value == value); });
-    // }
 
     public function key_link(a :Node<T>, b :Node<T>) {
         references.push(new Reference(a, b, Key));
-        // key_ref[a] = b;
     }
-
-    // public function get_key_link_for_node(node :Node<T>) {
-    //     return key_ref[node];
-    // }
 
     public function get_references() {
         return references;
