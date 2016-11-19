@@ -58,7 +58,7 @@ class WorldState extends State {
     override function init() {
         overlay_batcher = Luxe.renderer.create_batcher({
             name: 'overlay',
-            layer: 100
+            layer: 1000
         });
         overlay_batcher.on(prerender, function(b :Batcher) {
             Luxe.renderer.blend_mode(BlendMode.src_alpha, BlendMode.one);
@@ -247,13 +247,15 @@ class WorldState extends State {
         Luxe.camera.zoom = 0.1;
         luxe.tween.Actuate.tween(Luxe.camera, 0.5, { zoom: 1 });
 
-        // overlay_filter = new Sprite({
-        //     pos: Luxe.screen.mid.clone(),
-        //     texture: Luxe.resources.texture('assets/images/overlay_filter.png'),
-        //     size: Luxe.screen.size.clone(),
-        //     batcher: overlay_batcher
-        // });
-        // overlay_filter.color.a = 0.5;
+        overlay_filter = new Sprite({
+            centered: true,
+            pos: Luxe.camera.pos.clone(),
+            texture: Luxe.resources.texture('assets/images/overlay_filter.png'),
+            size: Vector.Multiply(Luxe.screen.size.clone(), 1.2),
+            batcher: overlay_batcher,
+            depth: 1000
+        });
+        overlay_filter.color.a = 0.5;
     }
 
     override function onleave(_) {
@@ -261,6 +263,7 @@ class WorldState extends State {
     }
 
     override function onrender() {
+        overlay_filter.pos = Luxe.camera.view.center.clone();
         for (i in 0 ... s.numberOfSprings()) {
             var e :Spring = s.getSpring(i);
             var a :Particle = e.getOneEnd();
