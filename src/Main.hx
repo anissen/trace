@@ -18,8 +18,30 @@ class Main extends luxe.Game {
     override function config(config :luxe.GameConfig) {
         config.render.antialiasing = 4;
 
+        // config.preload.textures.push({ id: 'assets/images/brick-wall.png' });
+        config.preload.textures.push({ id: 'assets/images/circuitry.png' });
+        config.preload.textures.push({ id: 'assets/images/computing.png' });
+        config.preload.textures.push({ id: 'assets/images/database.png' });
+        config.preload.textures.push({ id: 'assets/images/finger-print.png' });
+        config.preload.textures.push({ id: 'assets/images/fire-ring.png' });
+        config.preload.textures.push({ id: 'assets/images/hazard-sign.png' });
+        config.preload.textures.push({ id: 'assets/images/honeypot.png' });
+        config.preload.textures.push({ id: 'assets/images/id-card.png' });
+        config.preload.textures.push({ id: 'assets/images/leeching-worm.png' });
+        config.preload.textures.push({ id: 'assets/images/plug.png' });
+        config.preload.textures.push({ id: 'assets/images/processor.png' });
+        config.preload.textures.push({ id: 'assets/images/radar-sweep.png' });
+        config.preload.textures.push({ id: 'assets/images/shieldcomb.png' });
+        config.preload.textures.push({ id: 'assets/images/spider-bot.png' });
+        config.preload.textures.push({ id: 'assets/images/stopwatch.png' });
+        config.preload.textures.push({ id: 'assets/images/trojan-horse.png' });
+        
+        config.preload.textures.push({ id: 'assets/images/overlay_filter.png' });
+
         config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/fullretard.frag', vert_id: 'default' });
+        #if with_shader
         config.preload.shaders.push({ id: 'circuits', frag_id: 'assets/shaders/circuits.glsl', vert_id: 'default' });
+        #end
 
         return config;
     }

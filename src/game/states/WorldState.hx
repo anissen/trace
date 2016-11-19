@@ -142,10 +142,12 @@ class WorldState extends State {
         var capture_time = 1.5;
         var is_locked = false;
         var unlocks = null;
+        var texture = null;
         switch (n.value) {
             case 'datastore':
                 detection = 20;
                 capture_time = 2;
+                texture = Luxe.resources.texture('assets/images/database.png');
             case 'lock':
                 is_locked = true;
             case 'key':
@@ -164,6 +166,7 @@ class WorldState extends State {
                 angle: 30,
                 solid: true
             }),
+            texture: texture,
             depth: 10,
             value: n.to_string(),
             key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0],

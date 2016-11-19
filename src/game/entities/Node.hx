@@ -3,6 +3,7 @@ package game.entities;
 
 import luxe.Vector;
 import luxe.Visual;
+import luxe.Sprite;
 import luxe.Color;
 import luxe.Text;
 
@@ -37,6 +38,16 @@ class Node extends Visual {
         this.capture_time = options.capture_time;
         this.is_locked = options.is_locked;
         this.unlocks = options.unlocks;
+
+        if (texture != null) {
+            new Sprite({
+                texture: texture,
+                scale: new Vector(0.25, 0.25),
+                color: new Color(0, 0, 0),
+                depth: options.depth,
+                parent: this
+            });
+        }
 
         text = new Text({
             text: options.key,
