@@ -42,6 +42,7 @@ class WorldState extends State {
     var enemy_capture_node :GraphNode;
     var enemy_captured_nodes :Array<GraphNode>;
 
+    var got_data :Bool;
 
     var node_entities :Map<GraphNode, game.entities.Node>;
 
@@ -87,6 +88,8 @@ class WorldState extends State {
         capture_time = 0;
         captured_nodes = [];
         captured_keys = [];
+
+        got_data = false;
 
         enemy_in_game = false;
         enemy_current = null;
@@ -434,6 +437,14 @@ class WorldState extends State {
         if (current_entity.unlocks != null && captured_keys.indexOf(current_entity.unlocks) == -1) {
             captured_keys.push(current_entity.unlocks);
         }
+
+        if (current.value == 'datastore') {
+            got_data = true;
+        } else if (current.value == 'start' && got_data) {
+            trace('You won!');
+            Luxe.renderer.clear_color.tween(1, { g: 1 });
+        }
+
         // if (current_entity.unlocks != null && node_entities.exists(current_entity.unlocks)) {
         //     node_entities[current_entity.unlocks].is_locked = false;
         // }
