@@ -185,16 +185,6 @@ class WorldState extends State {
                 color: entity.color,
                 parent: entity
             });
-            // new luxe.Visual({
-            //     geometry: Luxe.draw.ngon({
-            //         r: NODE_SIZE * 1.4,
-            //         sides: 6,
-            //         angle: 30,
-            //         solid: false
-            //     }),
-            //     color: entity.color,
-            //     parent: entity
-            // });
         }
 
         return entity;
@@ -363,30 +353,6 @@ class WorldState extends State {
         result.z = 0;
         return result;
     }
-
-    // override function onmousemove(event :MouseEvent) {
-    //     for (n in node_entities.keys()) {
-    //         var entity = node_entities[n];
-    //         var hit = Luxe.utils.geometry.point_in_geometry(get_world_pos(event.pos), entity.geometry);
-    //         entity.color.r = (hit ? 0 : 1);
-    //     }
-    // }
-    //
-    // override function onmousedown(event :MouseEvent) {
-    //     for (n in node_entities.keys()) {
-    //         var entity = node_entities[n];
-    //         var hit = Luxe.utils.geometry.point_in_geometry(get_world_pos(event.pos), entity.geometry);
-    //         if (hit) {
-    //             for (node in node_entities.keys()) {
-    //                 if (node_entities[node] == entity) {
-    //                     select_node(node);
-    //                     return;
-    //                 }
-    //             }
-    //             return;
-    //         }
-    //     }
-    // }
 
     override function onkeydown(event :luxe.Input.KeyEvent) {
         if (capture_node != null) {
