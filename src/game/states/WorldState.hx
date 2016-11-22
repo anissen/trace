@@ -9,6 +9,7 @@ import luxe.tween.Actuate;
 import phoenix.Batcher;
 import luxe.Scene;
 import luxe.Color;
+import luxe.Text;
 import snow.api.Promise;
 
 import core.physics.*;
@@ -44,6 +45,9 @@ class WorldState extends State {
     var got_data :Bool;
 
     var node_entities :Map<GraphNode, game.entities.Node>;
+
+    var countdownText :Text;
+    var countdown :Float;
 
     #if with_shader
     var circuits_sprite :Sprite;
@@ -95,6 +99,18 @@ class WorldState extends State {
         enemy_capture_time = 0;
         enemy_captured_nodes = [];
 
+        countdownText = new Text({
+            text: '--:--',
+            pos: new Vector(Luxe.screen.mid.x, 50),
+            point_size: 64,
+            align: center,
+            align_vertical: center,
+            batcher: Luxe.renderer.create_batcher({
+                name: 'ui',
+                layer: 500
+            })
+        });
+
         // test
         graph = core.models.Graph.Factory.create_graph();
 
@@ -103,9 +119,11 @@ class WorldState extends State {
         var start_node = graph.get_node('start');
         select_node(start_node);
 
+        countdown = 60;
+
         haxe.Timer.delay(function() {
             detected(start_node);
-        }, 60000);
+        }, Math.floor(countdown * 1000));
     }
 
     function add_linked_nodes(n :GraphNode) {
@@ -145,7 +163,7 @@ class WorldState extends State {
                 capture_time = 2;
                 texture = Luxe.resources.texture('assets/images/database.png');
             case 'node':
-                detection = 10;
+                detection = 100;
                 capture_time = 1;
                 // texture = Luxe.resources.texture('assets/images/processor.png');
             case 'lock':
@@ -439,6 +457,14 @@ class WorldState extends State {
         enemy_current = node;
         enemy_capture_node = node;
         enemy_capture_time = 10;
+
+        if (countdown > 0) {
+            countdownText.color.tween(1, { g: 0, b: 0 }).onComplete(function(_) {
+                countdownText.color.tween(0.5, { b: 0.8 }).reflect().repeat();
+            });
+            countdown = -1;
+        }
+
         Luxe.renderer.clear_color.tween(enemy_capture_time, { r: 0.4 });
         Luxe.camera.shake(5);
         Main.shift = 0.01;
@@ -453,6 +479,22 @@ class WorldState extends State {
         Luxe.camera.focus(current_entity.pos, 0.1);
 
         angle += dt;
+
+        if (countdown > 0) {
+            var minutes = Math.floor(countdown / 60);
+            var seconds = Math.floor(countdown % 60);
+            var miliseconds = Math.floor((countdown * 10) % 10);
+            countdownText.text = (minutes < 10 ? '0' : '') + minutes + ':';
+            countdownText.text += (seconds < 10 ? '0' : '') + seconds + ':';
+            countdownText.text += (miliseconds < 10 ? '0' : '') + miliseconds;
+
+            countdown -= dt;
+            if (countdown <= 0) {
+                countdownText.color.tween(1, { g: 0, b: 0 }).onComplete(function(_) {
+                    countdownText.color.tween(0.5, { b: 0.8 }).reflect().repeat();
+                });
+            }
+        }
 
         Luxe.camera.rotation.setFromAxisAngle(new Vector(1, 1, 0), Math.cos(angle) * 0.2);
 
