@@ -147,6 +147,11 @@ class WorldState extends State {
             case 'node':
                 detection = 10;
                 capture_time = 1;
+                // texture = Luxe.resources.texture('assets/images/processor.png');
+            case 'lock':
+                texture = Luxe.resources.texture('assets/images/finger-print.png');
+            case 'key':
+                texture = Luxe.resources.texture('assets/images/id-card.png');
         }
 
         var entity = new game.entities.Node({
@@ -165,6 +170,8 @@ class WorldState extends State {
             detection: detection,
             capture_time: capture_time
         });
+
+        if (is_locked(n)) entity.set_capture_text('?');
 
         // Enforced
         if (n.value == 'gate') {
@@ -245,7 +252,7 @@ class WorldState extends State {
             batcher: overlay_batcher,
             depth: 1000
         });
-        overlay_filter.color.a = 0.5;
+        overlay_filter.color.a = 0.6;
     }
 
     override function onleave(_) {
@@ -264,7 +271,20 @@ class WorldState extends State {
                 immediate: true,
                 depth: 5
             });
-            if (is_locked(r.b)) line.color.a = 0.3;
+            if (captured_nodes.indexOf(r.b) == -1 && is_locked(r.b)) {
+                line.color = new Color(1, 0, 0, 0.5);
+            }
+            // for (key in graph.get_keys_for_node(r.b)) {
+            //     if (!node_entities.exists(key)) continue;
+            //     Luxe.draw.line({
+            //         p0: node_entities[key].pos,
+            //         p1: node_entities[r.b].pos,
+            //         color0: new Color(0, 1, 0),
+            //         color1: new Color(1, 1, 1),
+            //         immediate: true,
+            //         depth: 5
+            //     });
+            // }
         }
 
         if (current != null) {
@@ -362,11 +382,11 @@ class WorldState extends State {
         for (n in graph.get_edges_for_node(current)) {
             if (enemy_in_game && (n == enemy_current)) continue; // cannot select enemy node
             if (!node_entities.exists(n)) continue; // if creation delay
-            if (is_locked(n)) continue;
 
             var entity = node_entities[n];
             if (event.keycode == entity.key.toLowerCase().charCodeAt(0)) {
                 var already_captured = (captured_nodes.indexOf(n) >= 0);
+                if (!already_captured && is_locked(n)) return;
                 capture_time = (already_captured ? 0.2 : entity.capture_time);
                 capture_node = n;
                 return;
@@ -375,6 +395,7 @@ class WorldState extends State {
     }
 
     override function onkeyup(event :luxe.Input.KeyEvent) {
+        if (capture_node == null) return;
         if (node_entities.exists(capture_node)) node_entities[capture_node].set_capture_text('');
         capture_node = null;
     }
@@ -454,6 +475,10 @@ class WorldState extends State {
             }
             if (capture_time <= 0) {
                 capture_entity.set_capture_text('');
+                for (lock in graph.get_locks_for_node(capture_node)) {
+                    if (!node_entities.exists(lock)) continue;
+                    node_entities[lock].set_capture_text('');
+                }
                 select_node(capture_node);
 
                 if (!captured_by_player && Math.random() < capture_entity.detection / 100) {

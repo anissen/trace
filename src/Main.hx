@@ -35,7 +35,8 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/spider-bot.png' });
         config.preload.textures.push({ id: 'assets/images/stopwatch.png' });
         config.preload.textures.push({ id: 'assets/images/trojan-horse.png' });
-        
+        config.preload.textures.push({ id: 'assets/images/checker.png' });
+
         config.preload.textures.push({ id: 'assets/images/overlay_filter.png' });
 
         config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/fullretard.frag', vert_id: 'default' });

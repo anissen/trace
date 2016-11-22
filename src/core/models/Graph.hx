@@ -117,6 +117,12 @@ class Graph<T> {
             .map(function(r) { return r.a; });
     }
 
+    public function get_locks_for_node(node :Node<T>) {
+        return references
+            .filter(function(r) { return (r.type == Key && r.a == node); })
+            .map(function(r) { return r.b; });
+    }
+
     public function mark_pattern(pattern :Graph<T>) :Bool {
         var first_nodes = nodes.filter(function(n) { return (n.value == pattern.nodes[0].value); });
         core.tools.ArrayTools.shuffle(first_nodes);

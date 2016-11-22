@@ -25,7 +25,7 @@ class Node extends Visual {
     public var detection :Float;
     public var capture_time :Float;
     public var text :Text;
-    public var description :Text;
+    // public var description :Text;
     // public var is_locked :Bool;
     // public var unlocks :GraphNode;
 
@@ -40,43 +40,52 @@ class Node extends Visual {
         // this.unlocks = options.unlocks;
 
         if (texture != null) {
-            new Sprite({
+            var icon = new Sprite({
                 texture: texture,
-                scale: new Vector(0.25, 0.25),
-                color: new Color(0, 0, 0),
+                scale: new Vector(0.35, 0.35),
+                color: new Color(1 - color.r / 2, 1 - color.g / 2, 1 - color.b / 2),
                 depth: options.depth,
                 parent: this
             });
         }
 
+        var bar = new Visual({
+            pos: (texture != null ? new Vector(-40, 40) : new Vector(-40, -35/2)),
+            color: new Color(0, 0, 0),
+            size: new Vector(80, 35),
+            parent: this,
+            depth: options.depth + 1
+        });
+
         text = new Text({
             text: options.key,
-            color: new Color(0, 0, 0),
+            pos: new Vector(40, 15),
+            color: new Color(1, 1, 1),
             align: center,
             align_vertical: center,
             point_size: 36,
-            depth: options.depth,
-            parent: this
+            depth: options.depth + 2,
+            parent: bar
         });
-        description = new Text({
-            pos: new Vector(0, 25),
-            text: options.value,
-            color: new Color(0, 0, 0),
-            align: center,
-            align_vertical: center,
-            point_size: 24,
-            depth: options.depth,
-            parent: this
-        });
+        // description = new Text({
+        //     pos: new Vector(0, 25),
+        //     text: options.value,
+        //     color: new Color(0, 0, 0),
+        //     align: center,
+        //     align_vertical: center,
+        //     point_size: 24,
+        //     depth: options.depth,
+        //     parent: this
+        // });
     }
 
     public function set_capture_text(str :String) {
         if (str != '') {
             text.text = str;
-            description.visible = false;
+            // description.visible = false;
         } else {
             text.text = key;
-            description.visible = true;
+            // description.visible = true;
         }
     }
 }

@@ -1,7 +1,6 @@
 
 # To-do
 
-[ ] Make it possible to win the game
 [ ] Lock/key system
 [ ] Add node icons
 [ ] Count-down
@@ -12,6 +11,7 @@
 [ ] Tutorial
 [ ] Menu
 [ ] Background image
+[ ] Better arrows (image + UV translation)
 
 
 Misc:
