@@ -11,6 +11,7 @@ import luxe.Scene;
 import luxe.Color;
 import luxe.Text;
 import snow.api.Promise;
+import game.entities.Notification;
 
 import core.physics.*;
 
@@ -163,7 +164,7 @@ class WorldState extends State {
                 capture_time = 2;
                 texture = Luxe.resources.texture('assets/images/database.png');
             case 'node':
-                detection = 100;
+                detection = 10;
                 capture_time = 1;
                 // texture = Luxe.resources.texture('assets/images/processor.png');
             case 'lock':
@@ -189,7 +190,9 @@ class WorldState extends State {
             capture_time: capture_time
         });
 
-        if (is_locked(n)) entity.set_capture_text('?');
+        if (is_locked(n)) {
+            entity.set_capture_text('?');
+        }
 
         // Enforced
         if (n.value == 'gate') {
@@ -441,6 +444,12 @@ class WorldState extends State {
 
         if (current.value == 'datastore') {
             got_data = true;
+            Notification.Toast({
+                text: 'DATA ACQUIRED\nRETURN TO EXTRACTION POINT',
+                color: new Color(1, 0, 1),
+                pos: new Vector(current_entity.pos.x, current_entity.pos.y - 100),
+                duration: 10
+            });
         } else if (current.value == 'start' && got_data) {
             trace('You won!');
             Luxe.renderer.clear_color.tween(1, { g: 1 });
@@ -458,12 +467,19 @@ class WorldState extends State {
         enemy_capture_node = node;
         enemy_capture_time = 10;
 
+        var detectionText = 'COUNTER MEASURES\nINITIATED!';
         if (countdown > 0) {
             countdownText.color.tween(1, { g: 0, b: 0 }).onComplete(function(_) {
                 countdownText.color.tween(0.5, { b: 0.8 }).reflect().repeat();
             });
             countdown = -1;
+            detectionText = 'DETECTED!';
         }
+        Notification.Toast({
+            text: detectionText,
+            color: new Color(1, 0, 0),
+            pos: node_entities[node].pos
+        });
 
         Luxe.renderer.clear_color.tween(enemy_capture_time, { r: 0.4 });
         Luxe.camera.shake(5);
