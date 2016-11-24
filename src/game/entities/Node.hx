@@ -42,7 +42,7 @@ class Node extends Visual {
         if (texture != null) {
             var icon = new Sprite({
                 texture: texture,
-                scale: new Vector(0.35, 0.35),
+                scale: new Vector(0.3, 0.3),
                 color: new Color(1 - color.r / 2, 1 - color.g / 2, 1 - color.b / 2),
                 depth: options.depth,
                 parent: this
@@ -50,7 +50,7 @@ class Node extends Visual {
         }
 
         var bar = new Visual({
-            pos: (texture != null ? new Vector(-40, 40) : new Vector(-40, -35/2)),
+            pos: (texture != null ? new Vector(-40, 30) : new Vector(-40, -35/2)),
             color: new Color(0, 0, 0),
             size: new Vector(80, 35),
             parent: this,

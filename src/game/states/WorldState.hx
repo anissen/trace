@@ -12,6 +12,7 @@ import luxe.Color;
 import luxe.Text;
 import snow.api.Promise;
 import game.entities.Notification;
+import game.entities.ItemBox;
 
 import core.physics.*;
 
@@ -49,6 +50,8 @@ class WorldState extends State {
 
     var countdownText :Text;
     var countdown :Float;
+
+    var itemBox1 :ItemBox;
 
     #if with_shader
     var circuits_sprite :Sprite;
@@ -116,6 +119,12 @@ class WorldState extends State {
         graph = core.models.Graph.Factory.create_graph();
 
         setup_particles();
+
+        itemBox1 = new ItemBox({
+            item: '1: Trojan',
+            origin: new Vector(),
+            offset: new Vector(-80 - NODE_SIZE, 0)
+        });
 
         var start_node = graph.get_node('start');
         select_node(start_node);
@@ -310,6 +319,9 @@ class WorldState extends State {
 
         if (current != null) {
             var p = nodes[current];
+            if (node_entities.exists(current)) {
+                itemBox1.pos = node_entities[current].pos.clone();
+            }
             Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
@@ -440,6 +452,7 @@ class WorldState extends State {
         }
         var current_entity = node_entities[current];
         current_entity.color.rgb(0xF012BE); // .rgb(0xDD00FF);
+        // current_entity.show_item('Trojan');
         add_linked_nodes(node);
 
         if (current.value == 'datastore') {
@@ -447,7 +460,7 @@ class WorldState extends State {
             Notification.Toast({
                 text: 'DATA ACQUIRED\nRETURN TO EXTRACTION POINT',
                 color: new Color(1, 0, 1),
-                pos: new Vector(current_entity.pos.x, current_entity.pos.y - 100),
+                pos: new Vector(current_entity.pos.x, current_entity.pos.y - 150),
                 duration: 10
             });
         } else if (current.value == 'start' && got_data) {
