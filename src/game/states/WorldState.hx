@@ -51,7 +51,8 @@ class WorldState extends State {
     var countdownText :Text;
     var countdown :Float;
 
-    var itemBox1 :ItemBox;
+    var item_boxes :Array<ItemBox>;
+    var max_item_boxes :Int = 2;
 
     #if with_shader
     var circuits_sprite :Sprite;
@@ -120,11 +121,27 @@ class WorldState extends State {
 
         setup_particles();
 
-        itemBox1 = new ItemBox({
-            item: '1: Trojan',
-            origin: new Vector(),
-            offset: new Vector(-80 - NODE_SIZE, 0)
-        });
+        item_boxes = [];
+        item_boxes.push(new ItemBox({
+            item: 'Trojan',
+            texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
+            index: 0
+        }));
+        item_boxes.push(new ItemBox({
+            item: 'Scan',
+            texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
+            index: 1
+        }));
+        item_boxes.push(new ItemBox({
+            item: 'ID',
+            texture: Luxe.resources.texture('assets/images/id-card.png'),
+            index: 2
+        }));
+        item_boxes.push(new ItemBox({
+            item: 'Enforce',
+            texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
+            index: 3
+        }));
 
         var start_node = graph.get_node('start');
         select_node(start_node);
@@ -320,7 +337,10 @@ class WorldState extends State {
         if (current != null) {
             var p = nodes[current];
             if (node_entities.exists(current)) {
-                itemBox1.pos = node_entities[current].pos.clone();
+                var current_entity_pos = node_entities[current].pos.clone();
+                for (itembox in item_boxes) {
+                    itembox.pos.lerp(current_entity_pos, 0.1 - 0.02 * itembox.index);
+                }
             }
             Luxe.draw.ngon({
                 x: p.position.x,

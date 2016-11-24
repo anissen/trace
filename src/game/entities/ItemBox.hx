@@ -1,77 +1,64 @@
 
 package game.entities;
 
+import luxe.Entity;
 import luxe.Vector;
 import luxe.Visual;
 import luxe.Sprite;
 import luxe.Color;
 import luxe.Text;
+import phoenix.Texture;
 
 typedef ItemOptions = {
-    origin: Vector,
-    offset: Vector,
-    item :String
+    item :String,
+    texture :Texture,
+    index :Int
 }
 
-class ItemBox extends luxe.Entity {
+class ItemBox extends Entity {
     public var item :String;
     public var text :Text;
+    public var index :Int;
 
     public function new(options :ItemOptions) {
-        super({
-            // origin: options.origin,
-            // pos: options.offset,
-            // color: new Color(0, 0, 0),
-            // size: new Vector(80, 80),
-            // depth: 2
-        });
-
+        super();
         this.item = options.item;
+        this.index = options.index;
 
-        // if (texture != null) {
-        //     var icon = new Sprite({
-        //         texture: texture,
-        //         scale: new Vector(0.35, 0.35),
-        //         color: new Color(1 - color.r / 2, 1 - color.g / 2, 1 - color.b / 2),
-        //         depth: options.depth,
-        //         parent: this
-        //     });
-        // }
+        var placement = switch (options.index) {
+            case 0: new Vector(-105, -120);
+            case 1: new Vector(   5, -120);
+            case 2: new Vector(-105,  20);
+            case 3: new Vector(   5,  20);
+            case _: throw 'error';
+        }
 
-        var left = new Visual({
-            pos: new Vector(-105, -120),
+        var bg = new Visual({
+            pos: placement,
             size: new Vector(100, 100),
-            color: new Color(0, 0, 0),
-            depth: 2,
-            parent: this
-        });
-
-        var right = new Visual({
-            pos: new Vector(5, -120),
-            size: new Vector(100, 100),
-            color: new Color(0, 0, 0),
+            color: new Color(0, 0, 0, 0.8),
             depth: 2,
             parent: this
         });
 
         text = new Text({
             text: options.item,
-            pos: new Vector(50, 15),
-            color: new Color(1, 0, 1),
+            pos: (options.index < 2 ? new Vector(50, 15) : new Vector(50, 85)),
+            color: new Color(0.8, 0, 0.8), //.rgb(0xF012BE),
             align: center,
             align_vertical: center,
             point_size: 22,
             depth: 2,
-            parent: left
+            parent: bg
         });
 
         new Sprite({
-            pos: new Vector(50, 60),
-            color: new Color(1, 0, 1),
-            texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
+            pos: (options.index < 2 ? new Vector(50, 60) : new Vector(50, 40)),
+            color: new Color(0.8, 0, 0.8), //.rgb(0xF012BE),
+            texture: options.texture,
             scale: new Vector(0.2, 0.2),
             depth: 2,
-            parent: left
+            parent: bg
         });
     }
 }
