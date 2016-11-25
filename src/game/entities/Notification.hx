@@ -42,7 +42,7 @@ class Notification extends Text {
         textShadow.depth -= 1;
         duration = options.duration;
         background = new luxe.Sprite({
-            color: new Color(1, 1, 1, 1),
+            color: new Color(1, 1, 1, 0.5),
             size: new Vector(this.geom.text_width, this.geom.text_height),
             depth: this.depth - 2,
             parent: this,

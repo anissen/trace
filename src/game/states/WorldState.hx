@@ -187,11 +187,11 @@ class WorldState extends State {
         switch (n.value) {
             case 'datastore':
                 detection = 20;
-                capture_time = 2;
+                capture_time = 4;
                 texture = Luxe.resources.texture('assets/images/database.png');
             case 'node':
                 detection = 10;
-                capture_time = 1;
+                capture_time = 2;
                 // texture = Luxe.resources.texture('assets/images/processor.png');
             case 'lock':
                 texture = Luxe.resources.texture('assets/images/finger-print.png');
@@ -337,9 +337,9 @@ class WorldState extends State {
         if (current != null) {
             var p = nodes[current];
             if (node_entities.exists(current)) {
-                var current_entity_pos = node_entities[current].pos.clone();
+                var current_entity_pos = node_entities[current].pos;
                 for (itembox in item_boxes) {
-                    itembox.pos.lerp(current_entity_pos, 0.1 - 0.02 * itembox.index);
+                    itembox.pos = current_entity_pos.clone();
                 }
             }
             Luxe.draw.ngon({
@@ -357,6 +357,12 @@ class WorldState extends State {
 
         if (capture_node != null) {
             var p = nodes[capture_node];
+            // if (node_entities.exists(capture_node)) {
+            //     var capture_node_entity_pos = node_entities[capture_node].pos.clone();
+            //     for (itembox in item_boxes) {
+            //         itembox.pos.lerp(capture_node_entity_pos, 0.1 - 0.02 * itembox.index);
+            //     }
+            // }
             Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
@@ -459,6 +465,8 @@ class WorldState extends State {
         if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
         enemy_captured_nodes.remove(node);
 
+        for (itembox in item_boxes) itembox.reset_position();
+
         current = node;
         if (!nodes.exists(node)) {
             nodes[node] = add_node();
@@ -480,7 +488,7 @@ class WorldState extends State {
             Notification.Toast({
                 text: 'DATA ACQUIRED\nRETURN TO EXTRACTION POINT',
                 color: new Color(1, 0, 1),
-                pos: new Vector(current_entity.pos.x, current_entity.pos.y - 150),
+                pos: new Vector(current_entity.pos.x, current_entity.pos.y - 120),
                 duration: 10
             });
         } else if (current.value == 'start' && got_data) {
