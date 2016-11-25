@@ -22,6 +22,7 @@ class ItemBox extends Entity {
 
     var pos_vector :Vector;
     var bg :Visual;
+    var icon :Sprite;
 
     public function new(options :ItemOptions) {
         super();
@@ -55,7 +56,7 @@ class ItemBox extends Entity {
             parent: bg
         });
 
-        new Sprite({
+        icon = new Sprite({
             pos: (options.index < 2 ? new Vector(50, 60) : new Vector(50, 40)),
             color: new Color(1, 0.3, 1), //.rgb(0xF012BE),
             texture: options.texture,
@@ -63,6 +64,12 @@ class ItemBox extends Entity {
             depth: 2,
             parent: bg
         });
+    }
+
+    public function visible(enabled :Bool) {
+        bg.visible = enabled;
+        text.visible = enabled;
+        icon.visible = enabled;
     }
 
     public function reset_position() {

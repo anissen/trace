@@ -52,6 +52,7 @@ class WorldState extends State {
     var countdown :Float;
 
     var item_boxes :Array<ItemBox>;
+    var capture_item_boxes :Array<ItemBox>;
     var max_item_boxes :Int = 2;
 
     #if with_shader
@@ -128,19 +129,16 @@ class WorldState extends State {
             index: 0
         }));
         item_boxes.push(new ItemBox({
-            item: 'Scan',
-            texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
-            index: 1
-        }));
-        item_boxes.push(new ItemBox({
-            item: 'ID',
-            texture: Luxe.resources.texture('assets/images/id-card.png'),
-            index: 2
-        }));
-        item_boxes.push(new ItemBox({
             item: 'Enforce',
             texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
-            index: 3
+            index: 1
+        }));
+
+        capture_item_boxes = [];
+        capture_item_boxes.push(new ItemBox({
+            item: 'Scan',
+            texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
+            index: 0
         }));
 
         var start_node = graph.get_node('start');
@@ -334,11 +332,15 @@ class WorldState extends State {
             // }
         }
 
+        for (itembox in item_boxes) {
+            itembox.visible(false);
+        }
         if (current != null) {
             var p = nodes[current];
             if (node_entities.exists(current)) {
                 var current_entity_pos = node_entities[current].pos;
                 for (itembox in item_boxes) {
+                    itembox.visible(true);
                     itembox.pos = current_entity_pos.clone();
                 }
             }
@@ -355,14 +357,18 @@ class WorldState extends State {
             });
         }
 
+        for (itembox in capture_item_boxes) {
+            itembox.visible(false);
+        }
         if (capture_node != null) {
             var p = nodes[capture_node];
-            // if (node_entities.exists(capture_node)) {
-            //     var capture_node_entity_pos = node_entities[capture_node].pos.clone();
-            //     for (itembox in item_boxes) {
-            //         itembox.pos.lerp(capture_node_entity_pos, 0.1 - 0.02 * itembox.index);
-            //     }
-            // }
+            if (node_entities.exists(capture_node)) {
+                var capture_entity_pos = node_entities[capture_node].pos;
+                for (itembox in capture_item_boxes) {
+                    itembox.visible(true);
+                    itembox.pos = capture_entity_pos.clone();
+                }
+            }
             Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
