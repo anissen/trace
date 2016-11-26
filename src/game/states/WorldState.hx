@@ -130,10 +130,9 @@ class WorldState extends State {
         });
 
         stopwatchIcon = new Sprite({
-            pos: new Vector(Luxe.screen.w * 0.70, 60),
+            pos: new Vector(Luxe.screen.w * 0.70, 55),
             texture: Luxe.resources.texture('assets/images/stopwatch.png'),
             scale: new Vector(0.25, 0.25),
-            // color: new Color(1, 0, 0),
             batcher: ui_batcher
         });
 
@@ -227,7 +226,10 @@ class WorldState extends State {
             case 'node':
                 detection = 10;
                 capture_time = 2;
-                // texture = Luxe.resources.texture('assets/images/processor.png');
+            case 'processor':
+                detection = 10;
+                capture_time = 2;
+                texture = Luxe.resources.texture('assets/images/processor.png');
             case 'lock':
                 texture = Luxe.resources.texture('assets/images/finger-print.png');
             case 'key':
