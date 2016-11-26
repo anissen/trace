@@ -138,6 +138,7 @@ class WorldState extends State {
         capture_item_boxes.push(new ItemBox({
             item: 'Scan',
             texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
+            inverted: true,
             index: 0
         }));
 

@@ -12,7 +12,8 @@ import phoenix.Texture;
 typedef ItemOptions = {
     item :String,
     texture :Texture,
-    index :Int
+    index :Int,
+    ?inverted :Bool
 }
 
 class ItemBox extends Entity {
@@ -37,10 +38,18 @@ class ItemBox extends Entity {
             case _: throw 'error';
         }
 
+        var bgColor = new Color(0, 0, 0, 0.9);
+        var fgColor = new Color(1, 0.3, 1); //.rgb(0xF012BE)
+        if (options.inverted != null && options.inverted) {
+            var tmpColor = bgColor.clone();
+            bgColor = fgColor.clone();
+            fgColor = tmpColor;
+        }
+
         bg = new Visual({
             // pos: placement,
             size: new Vector(100, 100),
-            color: new Color(0, 0, 0, 0.8),
+            color: bgColor,
             depth: 2,
             parent: this
         });
@@ -48,7 +57,7 @@ class ItemBox extends Entity {
         text = new Text({
             text: options.item,
             pos: (options.index < 2 ? new Vector(50, 15) : new Vector(50, 85)),
-            color: new Color(1, 0.3, 1), //.rgb(0xF012BE),
+            color: fgColor,
             align: center,
             align_vertical: center,
             point_size: 22,
@@ -58,7 +67,7 @@ class ItemBox extends Entity {
 
         icon = new Sprite({
             pos: (options.index < 2 ? new Vector(50, 60) : new Vector(50, 40)),
-            color: new Color(1, 0.3, 1), //.rgb(0xF012BE),
+            color: fgColor,
             texture: options.texture,
             scale: new Vector(0.2, 0.2),
             depth: 2,
