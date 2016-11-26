@@ -21,6 +21,7 @@ typedef NodeOptions = {
 }
 
 class Node extends Visual {
+    public var icon :Sprite;
     public var key :String;
     public var value :String;
     public var detection :Float;
@@ -28,6 +29,7 @@ class Node extends Visual {
     public var text :Text;
     public var enforced :Bool;
     public var honeypot :Sprite;
+
     // public var description :Text;
     // public var is_locked :Bool;
     // public var unlocks :GraphNode;
@@ -44,7 +46,7 @@ class Node extends Visual {
         // this.unlocks = options.unlocks;
 
         if (texture != null) {
-            var icon = new Sprite({
+            icon = new Sprite({
                 texture: texture,
                 scale: new Vector(0.3, 0.3),
                 color: new Color(1 - color.r / 2, 1 - color.g / 2, 1 - color.b / 2),
@@ -58,7 +60,7 @@ class Node extends Visual {
             color: new Color(0, 0, 0),
             size: new Vector(80, 35),
             parent: this,
-            depth: options.depth + 1
+            depth: options.depth + 2
         });
 
         text = new Text({
@@ -68,7 +70,7 @@ class Node extends Visual {
             align: center,
             align_vertical: center,
             point_size: 36,
-            depth: options.depth + 2,
+            depth: options.depth + 3,
             parent: bar
         });
         // description = new Text({
@@ -90,6 +92,21 @@ class Node extends Visual {
         } else {
             text.text = key;
             // description.visible = true;
+        }
+    }
+
+    public function nuked(is_nuked :Bool) {
+        this.text.point_size = (is_nuked ? 22 : 36);
+        set_capture_text(is_nuked ? 'NUKED' : '');
+        this.color.rgb(is_nuked ? 0xAAAAAA : 0x2ECC40);
+        this.color.a = (is_nuked ? 0.3 : 1.0);
+        if (icon != null) {
+            if (is_nuked) {
+                icon.color.rgb(is_nuked ? 0xAAAAAA : 0x2ECC40);
+            } else {
+                icon.color = new Color(1 - color.r / 2, 1 - color.g / 2, 1 - color.b / 2);
+            }
+            icon.color.a = (is_nuked ? 0.3 : 1.0);
         }
     }
 }

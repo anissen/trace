@@ -45,6 +45,7 @@ class WorldState extends State {
     var enemy_captured_nodes :Array<GraphNode>;
 
     var honeypots :Array<GraphNode>;
+    var nuked :Array<GraphNode>;
 
     var got_data :Bool;
 
@@ -108,6 +109,7 @@ class WorldState extends State {
         enemy_captured_nodes = [];
 
         honeypots = [];
+        nuked = [];
 
         countdownText = new Text({
             text: '--:--',
@@ -142,6 +144,11 @@ class WorldState extends State {
             texture: Luxe.resources.texture('assets/images/plug.png'),
             index: 2
         }));
+        item_boxes.push(new ItemBox({
+            item: 'Nuke',
+            texture: Luxe.resources.texture('assets/images/plug.png'),
+            index: 3
+        }));
 
         capture_item_boxes = [];
         capture_item_boxes.push(new ItemBox({
@@ -153,6 +160,7 @@ class WorldState extends State {
         capture_item_boxes.push(new ItemBox({
             item: 'Trojan',
             texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
+            inverted: true,
             index: 1
         }));
 
@@ -454,7 +462,10 @@ class WorldState extends State {
                     var entity = node_entities[current];
                     if (entity.enforced) return;
                     entity.enforced = true;
-                    entity.capture_time += 2;
+                    entity.capture_time += 10;
+                    if (enemy_capture_node == current) {
+                        enemy_capture_time += 10;
+                    }
                     new luxe.Visual({
                         geometry: Luxe.draw.ngon({
                             r: NODE_SIZE * 1.25,
@@ -471,7 +482,6 @@ class WorldState extends State {
                     var entity = node_entities[current];
                     honeypots.push(current);
                     entity.honeypot = new luxe.Sprite({
-                        name: 'honeypot',
                         pos: new Vector(0, 70),
                         texture: Luxe.resources.texture('assets/images/honeypot.png'),
                         scale: new Vector(0.25, 0.25),
@@ -481,7 +491,38 @@ class WorldState extends State {
                     });
                 }
             case 'Nuke':
-                detected(current);
+                if ((nuked.indexOf(current) < 0) && node_entities.exists(current)) {
+                    var entity = node_entities[current];
+                    nuked.push(current);
+                    entity.nuked(true);
+                    var nukeSprite = new luxe.Sprite({
+                        texture: Luxe.resources.texture('assets/images/plug.png'),
+                        scale: new Vector(0.35, 0.35),
+                        color: new Color(1, 0, 0),
+                        parent: entity,
+                        depth: 11
+                    });
+                    if (enemy_capture_node == current) {
+                        enemy_capture_node = null;
+                    }
+                    var current_copy = current; // to ensure a local copy of current for the delayed function
+                    haxe.Timer.delay(function() {
+                        entity.set_capture_text('UP: 3s');
+                    }, 27000);
+                    haxe.Timer.delay(function() {
+                        entity.set_capture_text('UP: 2s');
+                    }, 28000);
+                    haxe.Timer.delay(function() {
+                        entity.set_capture_text('UP: 1s');
+                    }, 29000);
+                    haxe.Timer.delay(function() {
+                        nukeSprite.destroy();
+                        entity.nuked(false);
+                        nuked.remove(current_copy);
+                        enemy_capture_node = current_copy;
+                        enemy_capture_time = get_enemy_capture_time();
+                    }, 30000);
+                }
         }
     }
 
@@ -508,6 +549,7 @@ class WorldState extends State {
         }
         for (n in graph.get_edges_for_node(current)) {
             if (enemy_in_game && (n == enemy_current)) continue; // cannot select enemy node
+            if (nuked.indexOf(n) > -1) continue; // cannot select nuked node
             if (!node_entities.exists(n)) continue; // if creation delay
 
             var entity = node_entities[n];
@@ -530,6 +572,7 @@ class WorldState extends State {
 
     function select_node(node :GraphNode) {
         if (enemy_in_game && (node == enemy_current)) return; // cannot select enemy node
+        if (nuked.indexOf(node) > -1) return; // cannot select nuked node
 
         if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
         enemy_captured_nodes.remove(node);
@@ -683,34 +726,48 @@ class WorldState extends State {
                 enemy_captured_nodes.push(enemy_capture_node);
                 honeypots.remove(enemy_capture_node);
 
-                var links = graph.get_edges_for_node(enemy_capture_node);
-
-                links.sort(function(a, b) { // always choose honeypots first
-                    // positive if a should come before b (see http://try.haxe.org/#3440f)
-                    // a honeypot: 2, -1
-                    // b honeypot: -1, 2
-                    // both honeypot: 2, 1
-                    // no honeypot: -1, -1
-                    return (honeypots.indexOf(b) - honeypots.indexOf(a));
-                });
-                enemy_capture_node = links.find(function(n) {
-                    return (enemy_captured_nodes.indexOf(n) < 0); // uncaptured link
-                });
-                if (enemy_capture_node == null) {
-                    enemy_capture_node = links.find(function(n) { // pick a honeypot, if possible
-                        return (honeypots.indexOf(n) > -1);
-                    });
-                    if (enemy_capture_node == null) { // just pick a random node
-                        enemy_capture_node = core.tools.ArrayTools.random(links);
-                    }
-                }
-                if (node_entities.exists(enemy_capture_node)) {
-                    var enemy_capture_entity = node_entities[enemy_capture_node];
-                    enemy_capture_time = enemy_capture_entity.capture_time * 1.5;
-                } else {
-                    enemy_capture_time = 3;
-                }
+                enemy_capture_node = get_enemy_capture_node();
+                enemy_capture_time = get_enemy_capture_time();
             }
+        }
+    }
+
+    function get_enemy_capture_node() {
+        var links = graph.get_edges_for_node(enemy_capture_node);
+        links = links.filter(function(n) {
+            return (nuked.indexOf(n) < 0);
+        });
+
+        if (links.length == 0) return null;
+
+        links.sort(function(a, b) { // always choose honeypots first
+            // positive if a should come before b (see http://try.haxe.org/#3440f)
+            // a honeypot: 2, -1
+            // b honeypot: -1, 2
+            // both honeypot: 2, 1
+            // no honeypot: -1, -1
+            return (honeypots.indexOf(b) - honeypots.indexOf(a));
+        });
+        var node = links.find(function(n) {
+            return (enemy_captured_nodes.indexOf(n) < 0); // uncaptured link
+        });
+        if (node != null) return node;
+
+        node = links.find(function(n) { // pick a honeypot, if possible
+            return (honeypots.indexOf(n) > -1);
+        });
+        if (node != null) return node;
+
+        // just pick a random node
+        return core.tools.ArrayTools.random(links);
+    }
+
+    function get_enemy_capture_time() {
+        if (enemy_capture_node != null && node_entities.exists(enemy_capture_node)) {
+            var enemy_capture_entity = node_entities[enemy_capture_node];
+            return enemy_capture_entity.capture_time * 1.5;
+        } else {
+            return 3;
         }
     }
 }
