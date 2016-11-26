@@ -15,6 +15,7 @@ typedef NodeOptions = {
     value :String,
     detection :Float,
     capture_time :Float,
+    ?enforced :Bool,
     // is_locked :Bool,
     // unlocks :GraphNode
 }
@@ -25,6 +26,7 @@ class Node extends Visual {
     public var detection :Float;
     public var capture_time :Float;
     public var text :Text;
+    public var enforced :Bool;
     // public var description :Text;
     // public var is_locked :Bool;
     // public var unlocks :GraphNode;
@@ -36,6 +38,7 @@ class Node extends Visual {
         this.value = options.value;
         this.detection = options.detection;
         this.capture_time = options.capture_time;
+        this.enforced = (options.enforced != null ? options.enforced : false);
         // this.is_locked = options.is_locked;
         // this.unlocks = options.unlocks;
 

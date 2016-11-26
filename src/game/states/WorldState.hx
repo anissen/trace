@@ -219,20 +219,6 @@ class WorldState extends State {
             entity.set_capture_text('?');
         }
 
-        // Enforced
-        if (n.value == 'gate') {
-            new luxe.Visual({
-                geometry: Luxe.draw.ngon({
-                    r: NODE_SIZE * 1.25,
-                    sides: 6,
-                    angle: 30,
-                    solid: false
-                }),
-                color: entity.color,
-                parent: entity
-            });
-        }
-
         return entity;
     }
 
@@ -338,7 +324,7 @@ class WorldState extends State {
         }
         if (current != null) {
             var p = nodes[current];
-            if (node_entities.exists(current)) {
+            if (node_entities.exists(current) && capture_node == null) {
                 var current_entity_pos = node_entities[current].pos;
                 for (itembox in item_boxes) {
                     itembox.visible(true);
@@ -348,7 +334,7 @@ class WorldState extends State {
             Luxe.draw.ngon({
                 x: p.position.x,
                 y: p.position.y,
-                r: NODE_SIZE * 1.2,
+                r: NODE_SIZE * 1.15,
                 sides: 6,
                 angle: 30,
                 color: new Color().rgb(0xF012BE),
@@ -440,7 +426,50 @@ class WorldState extends State {
         return false;
     }
 
+    function handle_item(name :String) {
+        switch (name) {
+            // capture
+            case 'Scan':
+                add_linked_nodes(capture_node);
+            case 'Trojan':
+                select_node(capture_node);
+                capture_node = null;
+            // node
+            case 'Enforce':
+                if (node_entities.exists(current)) {
+                    var entity = node_entities[current];
+                    if (entity.enforced) return;
+                    entity.enforced = true;
+                    entity.capture_time += 2;
+                    new luxe.Visual({
+                        geometry: Luxe.draw.ngon({
+                            r: NODE_SIZE * 1.25,
+                            sides: 6,
+                            angle: 30,
+                            solid: false
+                        }),
+                        color: entity.color,
+                        parent: entity
+                    });
+                };
+        }
+    }
+
     override function onkeydown(event :luxe.Input.KeyEvent) {
+        if (event.keycode >= luxe.Input.Key.key_1 && event.keycode <= luxe.Input.Key.key_9) {
+            var items = ((capture_node != null) ? capture_item_boxes : item_boxes);
+            var index = switch (event.keycode) {
+                case luxe.Input.Key.key_1: 0;
+                case luxe.Input.Key.key_2: 1;
+                case luxe.Input.Key.key_3: 2;
+                case luxe.Input.Key.key_4: 3;
+                case _: -1;
+            }
+            var item = items.find(function(i) { return (i.index == index); });
+            if (item == null) return;
+            handle_item(item.item);
+        }
+
         if (capture_node != null) {
             // to avoid retriggering the capture
             if (event.keycode == node_entities[capture_node].key.toLowerCase().charCodeAt(0)) return;
@@ -461,6 +490,7 @@ class WorldState extends State {
     }
 
     override function onkeyup(event :luxe.Input.KeyEvent) {
+        if (event.keycode >= luxe.Input.Key.key_1 && event.keycode <= luxe.Input.Key.key_9) return;
         if (capture_node == null) return;
         if (node_entities.exists(capture_node)) node_entities[capture_node].set_capture_text('');
         capture_node = null;

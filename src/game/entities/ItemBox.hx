@@ -55,7 +55,7 @@ class ItemBox extends Entity {
         });
 
         text = new Text({
-            text: options.item,
+            text: '' + (options.index + 1) + ': ' + options.item,
             pos: (options.index < 2 ? new Vector(50, 15) : new Vector(50, 85)),
             color: fgColor,
             align: center,
