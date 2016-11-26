@@ -27,6 +27,7 @@ class Node extends Visual {
     public var capture_time :Float;
     public var text :Text;
     public var enforced :Bool;
+    public var honeypot :Sprite;
     // public var description :Text;
     // public var is_locked :Bool;
     // public var unlocks :GraphNode;

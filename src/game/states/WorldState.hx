@@ -44,6 +44,8 @@ class WorldState extends State {
     var enemy_capture_node :GraphNode;
     var enemy_captured_nodes :Array<GraphNode>;
 
+    var honeypots :Array<GraphNode>;
+
     var got_data :Bool;
 
     var node_entities :Map<GraphNode, game.entities.Node>;
@@ -105,6 +107,8 @@ class WorldState extends State {
         enemy_capture_time = 0;
         enemy_captured_nodes = [];
 
+        honeypots = [];
+
         countdownText = new Text({
             text: '--:--',
             pos: new Vector(Luxe.screen.mid.x, 50),
@@ -124,14 +128,19 @@ class WorldState extends State {
 
         item_boxes = [];
         item_boxes.push(new ItemBox({
-            item: 'Trojan',
-            texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
+            item: 'Enforce',
+            texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
             index: 0
         }));
         item_boxes.push(new ItemBox({
-            item: 'Enforce',
-            texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
+            item: 'Honeypot',
+            texture: Luxe.resources.texture('assets/images/honeypot.png'),
             index: 1
+        }));
+        item_boxes.push(new ItemBox({
+            item: 'Nuke',
+            texture: Luxe.resources.texture('assets/images/plug.png'),
+            index: 2
         }));
 
         capture_item_boxes = [];
@@ -140,6 +149,11 @@ class WorldState extends State {
             texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
             inverted: true,
             index: 0
+        }));
+        capture_item_boxes.push(new ItemBox({
+            item: 'Trojan',
+            texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
+            index: 1
         }));
 
         var start_node = graph.get_node('start');
@@ -430,9 +444,9 @@ class WorldState extends State {
         switch (name) {
             // capture
             case 'Scan':
-                add_linked_nodes(capture_node);
+                if (capture_node != null) add_linked_nodes(capture_node);
             case 'Trojan':
-                select_node(capture_node);
+                if (capture_node != null) select_node(capture_node);
                 capture_node = null;
             // node
             case 'Enforce':
@@ -452,6 +466,22 @@ class WorldState extends State {
                         parent: entity
                     });
                 };
+            case 'Honeypot':
+                if ((honeypots.indexOf(current) < 0) && node_entities.exists(current)) {
+                    var entity = node_entities[current];
+                    honeypots.push(current);
+                    entity.honeypot = new luxe.Sprite({
+                        name: 'honeypot',
+                        pos: new Vector(0, 70),
+                        texture: Luxe.resources.texture('assets/images/honeypot.png'),
+                        scale: new Vector(0.25, 0.25),
+                        color: new Color(1, 0.3, 1),
+                        parent: entity,
+                        depth: 50
+                    });
+                }
+            case 'Nuke':
+                detected(current);
         }
     }
 
@@ -468,6 +498,8 @@ class WorldState extends State {
             var item = items.find(function(i) { return (i.index == index); });
             if (item == null) return;
             handle_item(item.item);
+            items.remove(item);
+            item.destroy();
         }
 
         if (capture_node != null) {
@@ -490,8 +522,8 @@ class WorldState extends State {
     }
 
     override function onkeyup(event :luxe.Input.KeyEvent) {
-        if (event.keycode >= luxe.Input.Key.key_1 && event.keycode <= luxe.Input.Key.key_9) return;
         if (capture_node == null) return;
+        if (event.keycode < luxe.Input.Key.key_a && event.keycode > luxe.Input.Key.key_z) return;
         if (node_entities.exists(capture_node)) node_entities[capture_node].set_capture_text('');
         capture_node = null;
     }
@@ -520,7 +552,7 @@ class WorldState extends State {
         // current_entity.show_item('Trojan');
         add_linked_nodes(node);
 
-        if (current.value == 'datastore') {
+        if (current.value == 'datastore' && !got_data) {
             got_data = true;
             Notification.Toast({
                 text: 'DATA ACQUIRED\nRETURN TO EXTRACTION POINT',
@@ -636,7 +668,9 @@ class WorldState extends State {
 
                 captured_nodes.remove(enemy_capture_node);
                 if (node_entities.exists(enemy_capture_node)) {
-                    node_entities[enemy_capture_node].color.set(0xFF0000);
+                    var enemy_capture_entity = node_entities[enemy_capture_node];
+                    enemy_capture_entity.color.set(0xFF0000);
+                    if (enemy_capture_entity.honeypot != null) enemy_capture_entity.honeypot.destroy();
                 }
                 if (enemy_capture_node == current) {
                     Luxe.camera.shake(10);
@@ -647,12 +681,35 @@ class WorldState extends State {
                     return;
                 }
                 enemy_captured_nodes.push(enemy_capture_node);
+                honeypots.remove(enemy_capture_node);
+
                 var links = graph.get_edges_for_node(enemy_capture_node);
+
+                links.sort(function(a, b) { // always choose honeypots first
+                    // positive if a should come before b (see http://try.haxe.org/#3440f)
+                    // a honeypot: 2, -1
+                    // b honeypot: -1, 2
+                    // both honeypot: 2, 1
+                    // no honeypot: -1, -1
+                    return (honeypots.indexOf(b) - honeypots.indexOf(a));
+                });
                 enemy_capture_node = links.find(function(n) {
                     return (enemy_captured_nodes.indexOf(n) < 0); // uncaptured link
                 });
-                if (enemy_capture_node == null) enemy_capture_node = core.tools.ArrayTools.random(links);
-                enemy_capture_time = 3;
+                if (enemy_capture_node == null) {
+                    enemy_capture_node = links.find(function(n) { // pick a honeypot, if possible
+                        return (honeypots.indexOf(n) > -1);
+                    });
+                    if (enemy_capture_node == null) { // just pick a random node
+                        enemy_capture_node = core.tools.ArrayTools.random(links);
+                    }
+                }
+                if (node_entities.exists(enemy_capture_node)) {
+                    var enemy_capture_entity = node_entities[enemy_capture_node];
+                    enemy_capture_time = enemy_capture_entity.capture_time * 1.5;
+                } else {
+                    enemy_capture_time = 3;
+                }
             }
         }
     }
