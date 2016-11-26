@@ -54,6 +54,10 @@ class WorldState extends State {
     var countdownText :Text;
     var countdown :Float;
 
+    var stopwatchIcon :Sprite;
+
+    var ui_batcher :phoenix.Batcher;
+
     var item_boxes :Array<ItemBox>;
     var capture_item_boxes :Array<ItemBox>;
     var max_item_boxes :Int = 2;
@@ -111,16 +115,26 @@ class WorldState extends State {
         honeypots = [];
         nuked = [];
 
+        ui_batcher = Luxe.renderer.create_batcher({
+            name: 'ui',
+            layer: 500
+        });
+
         countdownText = new Text({
-            text: '--:--',
+            text: '--:--:--',
             pos: new Vector(Luxe.screen.mid.x, 50),
             point_size: 64,
             align: center,
             align_vertical: center,
-            batcher: Luxe.renderer.create_batcher({
-                name: 'ui',
-                layer: 500
-            })
+            batcher: ui_batcher
+        });
+
+        stopwatchIcon = new Sprite({
+            pos: new Vector(Luxe.screen.w * 0.70, 60),
+            texture: Luxe.resources.texture('assets/images/stopwatch.png'),
+            scale: new Vector(0.25, 0.25),
+            // color: new Color(1, 0, 0),
+            batcher: ui_batcher
         });
 
         // test
@@ -519,8 +533,10 @@ class WorldState extends State {
                         nukeSprite.destroy();
                         entity.nuked(false);
                         nuked.remove(current_copy);
-                        enemy_capture_node = current_copy;
-                        enemy_capture_time = get_enemy_capture_time();
+                        if (enemy_in_game) {
+                            enemy_capture_node = current_copy;
+                            enemy_capture_time = get_enemy_capture_time();
+                        }
                     }, 30000);
                 }
         }
@@ -633,6 +649,11 @@ class WorldState extends State {
             color: new Color(1, 0, 0),
             pos: node_entities[node].pos
         });
+
+        // change stopwatch to warning
+        stopwatchIcon.texture = Luxe.resources.texture('assets/images/hazard-sign.png');
+        stopwatchIcon.color = new Color(1, 0, 0);
+        stopwatchIcon.color.tween(0.5, { b: 0.8 }).reflect().repeat();
 
         Luxe.renderer.clear_color.tween(enemy_capture_time, { r: 0.4 });
         Luxe.camera.shake(5);
