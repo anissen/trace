@@ -131,7 +131,7 @@ class WorldState extends State {
 
         stopwatchIcon = new Sprite({
             pos: new Vector(Luxe.screen.w * 0.70, 55),
-            texture: Luxe.resources.texture('assets/images/stopwatch.png'),
+            texture: Luxe.resources.texture('assets/images/hazard-sign.png'),
             scale: new Vector(0.25, 0.25),
             batcher: ui_batcher
         });
@@ -142,40 +142,40 @@ class WorldState extends State {
         setup_particles();
 
         item_boxes = [];
-        item_boxes.push(new ItemBox({
-            item: 'Enforce',
-            texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
-            index: 0
-        }));
-        item_boxes.push(new ItemBox({
-            item: 'Honeypot',
-            texture: Luxe.resources.texture('assets/images/honeypot.png'),
-            index: 1
-        }));
-        item_boxes.push(new ItemBox({
-            item: 'Nuke',
-            texture: Luxe.resources.texture('assets/images/plug.png'),
-            index: 2
-        }));
-        item_boxes.push(new ItemBox({
-            item: 'Nuke',
-            texture: Luxe.resources.texture('assets/images/plug.png'),
-            index: 3
-        }));
+        // item_boxes.push(new ItemBox({
+        //     item: 'Enforce',
+        //     texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
+        //     index: 0
+        // }));
+        // item_boxes.push(new ItemBox({
+        //     item: 'Honeypot',
+        //     texture: Luxe.resources.texture('assets/images/honeypot.png'),
+        //     index: 1
+        // }));
+        // item_boxes.push(new ItemBox({
+        //     item: 'Nuke',
+        //     texture: Luxe.resources.texture('assets/images/mushroom-cloud.png'),
+        //     index: 2
+        // }));
+        // item_boxes.push(new ItemBox({
+        //     item: 'Nuke',
+        //     texture: Luxe.resources.texture('assets/images/mushroom-cloud.png'),
+        //     index: 3
+        // }));
 
         capture_item_boxes = [];
-        capture_item_boxes.push(new ItemBox({
-            item: 'Scan',
-            texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
-            inverted: true,
-            index: 0
-        }));
-        capture_item_boxes.push(new ItemBox({
-            item: 'Trojan',
-            texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
-            inverted: true,
-            index: 1
-        }));
+        // capture_item_boxes.push(new ItemBox({
+        //     item: 'Scan',
+        //     texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
+        //     inverted: true,
+        //     index: 0
+        // }));
+        // capture_item_boxes.push(new ItemBox({
+        //     item: 'Trojan',
+        //     texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
+        //     inverted: true,
+        //     index: 1
+        // }));
 
         var start_node = graph.get_node('start');
         select_node(start_node);
@@ -216,20 +216,21 @@ class WorldState extends State {
 
     function create_node_entity(p :Particle, n :GraphNode) {
         var detection = 10;
-        var capture_time = 1.5;
+        var capture_time = 2;
         var texture = null;
         switch (n.value) {
+            case 'start':
+                texture = Luxe.resources.texture('assets/images/black-flag.png');
+            case 'goal':
+                detection = 20;
+                capture_time = 4;
+                texture = Luxe.resources.texture('assets/images/database.png');
             case 'datastore':
                 detection = 20;
                 capture_time = 4;
                 texture = Luxe.resources.texture('assets/images/database.png');
             case 'node':
-                detection = 10;
-                capture_time = 2;
-            case 'processor':
-                detection = 10;
-                capture_time = 2;
-                texture = Luxe.resources.texture('assets/images/processor.png');
+                // default values
             case 'lock':
                 texture = Luxe.resources.texture('assets/images/finger-print.png');
             case 'key':
@@ -512,7 +513,7 @@ class WorldState extends State {
                     nuked.push(current);
                     entity.nuked(true);
                     var nukeSprite = new luxe.Sprite({
-                        texture: Luxe.resources.texture('assets/images/plug.png'),
+                        texture: Luxe.resources.texture('assets/images/mushroom-cloud.png'),
                         scale: new Vector(0.35, 0.35),
                         color: new Color(1, 0, 0),
                         parent: entity,
@@ -523,6 +524,7 @@ class WorldState extends State {
                     }
                     var current_copy = current; // to ensure a local copy of current for the delayed function
                     haxe.Timer.delay(function() {
+                        nukeSprite.destroy();
                         entity.set_capture_text('UP: 3s');
                     }, 27000);
                     haxe.Timer.delay(function() {
@@ -532,7 +534,6 @@ class WorldState extends State {
                         entity.set_capture_text('UP: 1s');
                     }, 29000);
                     haxe.Timer.delay(function() {
-                        nukeSprite.destroy();
                         entity.nuked(false);
                         nuked.remove(current_copy);
                         if (enemy_in_game) {
@@ -613,7 +614,7 @@ class WorldState extends State {
         // current_entity.show_item('Trojan');
         add_linked_nodes(node);
 
-        if (current.value == 'datastore' && !got_data) {
+        if (current.value == 'goal' && !got_data) {
             got_data = true;
             Notification.Toast({
                 text: 'DATA ACQUIRED\nRETURN TO EXTRACTION POINT',
@@ -638,7 +639,7 @@ class WorldState extends State {
         enemy_capture_node = node;
         enemy_capture_time = 10;
 
-        var detectionText = 'COUNTER MEASURES\nINITIATED!';
+        var detectionText = 'TRACE\nINITIATED!';
         if (countdown > 0) {
             countdownText.color.tween(1, { g: 0, b: 0 }).onComplete(function(_) {
                 countdownText.color.tween(0.5, { b: 0.8 }).reflect().repeat();
@@ -652,8 +653,7 @@ class WorldState extends State {
             pos: node_entities[node].pos
         });
 
-        // change stopwatch to warning
-        stopwatchIcon.texture = Luxe.resources.texture('assets/images/hazard-sign.png');
+        // flash warning icon
         stopwatchIcon.color = new Color(1, 0, 0);
         stopwatchIcon.color.tween(0.5, { b: 0.8 }).reflect().repeat();
 
