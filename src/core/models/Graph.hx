@@ -250,83 +250,160 @@ class Factory {
     public static function create_graph() {
         var g = new Graph();
         var start = g.create_node('start');
-        var n1 = g.create_node('node');
-        var n2 = g.create_node('node');
-        var p1 = g.create_node('processor');
-        var p2 = g.create_node('processor');
-        var key1 = g.create_node('key');
-        var key2 = g.create_node('key');
-        var lock = g.create_node('lock');
-        var ds = g.create_node('datastore');
+        // var ds0 = g.create_node('datastore');
+        // var chain1 = g.create_node('ChainWithKey');
+        // var key1 = g.create_node('key');
+        var chainStart = g.create_node('ChainStart');
+        var chainEnd = g.create_node('ChainEnd');
+        // var chain2 = g.create_node('Chain');
+        // var lock1 = g.create_node('lock');
+        // var ds1 = g.create_node('datastore');
+
+        // var chain3 = g.create_node('Chain');
+        // var chain4 = g.create_node('ChainWithKey');
+        // var key2 = g.create_node('key');
+        // var lock2 = g.create_node('lock');
+        // var ds2 = g.create_node('datastore');
         var goal = g.create_node('goal');
-        g.link(start, n1);
-        g.link(start, p1);
-        g.link(n1, n2);
-        g.link(n1, key1);
-        g.link(p1, key2);
-        g.link(n2, lock);
-        g.link(n2, p2);
-        g.link(lock, ds);
-        g.key_link(key1, lock);
-        g.key_link(key2, lock);
 
-        // var g = new Graph();
-        // var start = g.create_node('start');
-        // var c1 = g.create_node('Chain');
-        // var c2 = g.create_node('Chain');
-        // var key = g.create_node('key');
-        // var c3 = g.create_node('Chain');
-        // var lock = g.create_node('lock');
-        // var ds = g.create_node('datastore');
+        g.link(start, chainStart);
+        g.link(chainStart, chainEnd);
+        g.link(chainEnd, goal);
+
+        // Do I have to use ChainStart + ChainEnd?
+
+        // // start chains
+        // g.link(start, chain1);
+        // g.link(start, chain2);
+        // g.link(start, ds0);
         //
-        // var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
-        // pattern_replacements.push({ pattern: get_graph_pattern(), replacements: [get_graph_expansion(), get_graph_shortcut(), get_graph_replacement(), get_graph_replacement2()]});
-        // pattern_replacements.push({ pattern: get_graph_pattern_lock(), replacements: [get_graph_replace_lock()]});
+        // // chain -> (key) -> lock
+        // // g.link(chain1, key1); g.link(key1, lock1);
+        // g.link(chain1, lock1);
+        // g.link(chain2, lock1);
         //
-        // var replacements = 0;
-        // var max_replacements = 10;
-        // while (replacements < max_replacements) {
-        //     var replacements_this_pass = 0;
-        //     core.tools.ArrayTools.shuffle(pattern_replacements);
-        //     for (pair in pattern_replacements) {
-        //         core.tools.ArrayTools.shuffle(pair.replacements);
-        //         for (replacement in pair.replacements) {
-        //             if (g.replace(pair.pattern, replacement)) {
-        //                 trace('Made a replacement with:');
-        //                 trace('Pattern:'); pair.pattern.print();
-        //                 trace('Replacement:'); replacement.print();
-        //                 replacements++;
-        //                 replacements_this_pass++;
-        //             }
-        //             if (replacements >= max_replacements) break;
-        //         }
-        //         if (replacements >= max_replacements) break;
-        //     }
-        //     if (replacements_this_pass == 0) {
-        //         trace('No more available patterns found!');
-        //         break;
-        //     }
-        // }
-        // trace('Made $replacements replacements!');
+        // // g.link(lock1, ds1);
+        // //
+        // // g.link(ds1, chain3);
+        // // g.link(ds1, chain4);
+        // //
+        // // // chain -> (key) -> lock
+        // // g.link(chain3, lock2);
+        // // g.link(chain4, lock2);
+        //
+        // // g.link(lock2, goal);
+        // // g.link(lock2, ds2);
+        //
+        // g.link(lock1, goal);
+        // g.link(lock1, ds2);
+        //
+        // g.key_link(chain1, lock1);
+        // // g.key_link(chain4, lock2);
+
+        var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
+        pattern_replacements.push({ pattern: chain_pattern(), replacements: [chain_replacement1(), chain_replacement2()]});
+        // pattern_replacements.push({ pattern: chain_with_key_pattern(), replacements: [chain_with_key_replacement1()]});
+        // pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
+
+        var replacements = 0;
+        var max_replacements = 10;
+        while (replacements < max_replacements) {
+            var replacements_this_pass = 0;
+            core.tools.ArrayTools.shuffle(pattern_replacements);
+            for (pair in pattern_replacements) {
+                core.tools.ArrayTools.shuffle(pair.replacements);
+                for (replacement in pair.replacements) {
+                    if (g.replace(pair.pattern, replacement)) {
+                        trace('Made a replacement with:');
+                        trace('Pattern:'); pair.pattern.print();
+                        trace('Replacement:'); replacement.print();
+                        replacements++;
+                        replacements_this_pass++;
+                    }
+                    if (replacements >= max_replacements) break;
+                }
+                if (replacements >= max_replacements) break;
+            }
+            if (replacements_this_pass == 0) {
+                trace('No more available patterns found!');
+                break;
+            }
+        }
+        trace('Made $replacements replacements!');
 
         return g;
     }
 
-    static function get_graph_pattern() {
+    static function chain_pattern() {
         var g = new Graph();
-        var A = g.create_node('Chain', 1);
-        var B = g.create_node('room', 2);
+        var A = g.create_node('ChainStart', 1);
+        var B = g.create_node('ChainEnd', 2);
         g.link(A, B);
         return g;
     }
 
-    static function get_graph_replacement() {
+    static function chain_replacement1() {
         var g = new Graph();
-        var A = g.create_node('room', 1);
-        var B = g.create_node('room_locked', 2);
-        var b = g.create_node('room_key', 3);
+        var A = g.create_node('node', 1);
+        var B = g.create_node('node', 2);
         g.link(A, B);
-        g.link(A, b);
+        return g;
+    }
+
+    static function chain_replacement2() {
+        var g = new Graph();
+        var A = g.create_node('node', 1);
+        var B = g.create_node('node', 2);
+        var C = g.create_node('node', 3);
+        g.link(A, B);
+        g.link(A, C);
+        return g;
+    }
+
+    static function chain_with_key_pattern() {
+        var g = new Graph();
+        var A = g.create_node('ChainWithKey', 1);
+        return g;
+    }
+
+    static function chain_with_key_replacement1() {
+        var g = new Graph();
+        var A = g.create_node('node', 3);
+        var B = g.create_node('node', 2);
+        var C = g.create_node('key', 1);
+        g.link(A, B);
+        g.link(A, C);
+        return g;
+    }
+
+    static function nodes_pattern() {
+        var g = new Graph();
+        var A = g.create_node('node', 1);
+        var B = g.create_node('node', 2);
+        return g;
+    }
+
+    static function nodes_replacement1() {
+        var g = new Graph();
+        var A = g.create_node('node', 1);
+        var B = g.create_node('key', 3);
+        var C = g.create_node('lock', 2);
+        g.link(A, B);
+        g.link(A, C);
+        g.key_link(B, C);
+        return g;
+    }
+
+    static function nodes_replacement2() {
+        var g = new Graph();
+        var A = g.create_node('node', 1);
+        var B = g.create_node('lock', 3);
+        var C = g.create_node('datastore', 4);
+        var D = g.create_node('key', 2);
+        g.link(A, B);
+        g.link(B, C);
+        g.link(A, D);
+        g.key_link(D, B);
         return g;
     }
 }
