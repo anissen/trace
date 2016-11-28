@@ -64,6 +64,8 @@ class WorldState extends State {
     var capture_item_boxes :Array<ItemBox>;
     var max_item_boxes :Int = 2;
 
+    var random :luxe.utils.Random;
+
     #if with_shader
     var circuits_sprite :Sprite;
     var circuits_shader :phoenix.Shader;
@@ -98,6 +100,8 @@ class WorldState extends State {
 
         nodes = new Map();
         node_entities = new Map();
+        random = new luxe.utils.Random(42);
+
         enemy_icon = null;
 
         available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split('');
@@ -530,6 +534,7 @@ class WorldState extends State {
             handle_item(item.item);
             items.remove(item);
             item.destroy();
+            return;
         }
 
         if (capture_node != null) {
@@ -554,7 +559,13 @@ class WorldState extends State {
 
     override function onkeyup(event :luxe.Input.KeyEvent) {
         if (capture_node == null) return;
-        if (event.keycode < luxe.Input.Key.key_a && event.keycode > luxe.Input.Key.key_z) return;
+        switch (event.keycode) {
+            case luxe.Input.Key.key_1: return;
+            case luxe.Input.Key.key_2: return;
+            case luxe.Input.Key.key_3: return;
+            case luxe.Input.Key.key_4: return;
+            case _:
+        }
         if (node_entities.exists(capture_node)) node_entities[capture_node].set_capture_text('');
         capture_node = null;
     }
@@ -683,7 +694,7 @@ class WorldState extends State {
         enemy_capture_time = 10;
 
         var detectionText = 'TRACE\nINITIATED!';
-        if (countdown > 0) {
+        if (countdown >= 0) {
             countdownText.color.tween(1, { g: 0, b: 0 }).onComplete(function(_) {
                 countdownText.color.tween(0.5, { b: 0.8 }).reflect().repeat();
             });
@@ -725,6 +736,7 @@ class WorldState extends State {
 
             countdown -= dt;
             if (countdown <= 0) {
+                countdownText.text = '00:00:00';
                 countdownText.color.tween(1, { g: 0, b: 0 }).onComplete(function(_) {
                     countdownText.color.tween(0.5, { b: 0.8 }).reflect().repeat();
                 });

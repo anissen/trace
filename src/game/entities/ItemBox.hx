@@ -55,12 +55,12 @@ class ItemBox extends Entity {
         });
 
         text = new Text({
-            text: '' + (options.index + 1) + ': ' + options.item,
+            text: '' + (options.index + 1) + ': ' + options.item.toUpperCase(),
             pos: (options.index < 2 ? new Vector(50, 15) : new Vector(50, 85)),
             color: fgColor,
             align: center,
             align_vertical: center,
-            point_size: 22,
+            point_size: 20,
             depth: 2,
             parent: bg
         });
