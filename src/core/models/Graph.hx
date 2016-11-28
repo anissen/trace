@@ -254,17 +254,21 @@ class Factory {
         var n2 = g.create_node('node');
         var p1 = g.create_node('processor');
         var p2 = g.create_node('processor');
-        var key = g.create_node('key');
+        var key1 = g.create_node('key');
+        var key2 = g.create_node('key');
         var lock = g.create_node('lock');
         var ds = g.create_node('datastore');
+        var goal = g.create_node('goal');
         g.link(start, n1);
         g.link(start, p1);
         g.link(n1, n2);
-        g.link(n1, key);
+        g.link(n1, key1);
+        g.link(p1, key2);
         g.link(n2, lock);
         g.link(n2, p2);
         g.link(lock, ds);
-        g.key_link(key, lock);
+        g.key_link(key1, lock);
+        g.key_link(key2, lock);
 
         // var g = new Graph();
         // var start = g.create_node('start');
