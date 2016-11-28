@@ -145,40 +145,7 @@ class WorldState extends State {
         setup_particles();
 
         item_boxes = [];
-        // item_boxes.push(new ItemBox({
-        //     item: 'Enforce',
-        //     texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
-        //     index: 0
-        // }));
-        // item_boxes.push(new ItemBox({
-        //     item: 'Honeypot',
-        //     texture: Luxe.resources.texture('assets/images/honeypot.png'),
-        //     index: 1
-        // }));
-        // item_boxes.push(new ItemBox({
-        //     item: 'Nuke',
-        //     texture: Luxe.resources.texture('assets/images/mushroom-cloud.png'),
-        //     index: 2
-        // }));
-        // item_boxes.push(new ItemBox({
-        //     item: 'Nuke',
-        //     texture: Luxe.resources.texture('assets/images/mushroom-cloud.png'),
-        //     index: 3
-        // }));
-
         capture_item_boxes = [];
-        // capture_item_boxes.push(new ItemBox({
-        //     item: 'Scan',
-        //     texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
-        //     inverted: true,
-        //     index: 0
-        // }));
-        // capture_item_boxes.push(new ItemBox({
-        //     item: 'Trojan',
-        //     texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
-        //     inverted: true,
-        //     index: 1
-        // }));
 
         var start_node = graph.get_node('start');
         select_node(start_node);
@@ -596,11 +563,6 @@ class WorldState extends State {
         if (enemy_in_game && (node == enemy_current)) return; // cannot select enemy node
         if (nuked.indexOf(node) > -1) return; // cannot select nuked node
 
-        if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
-        enemy_captured_nodes.remove(node);
-
-        for (itembox in item_boxes) itembox.reset_position();
-
         current = node;
         if (!nodes.exists(node)) {
             nodes[node] = add_node();
@@ -628,11 +590,89 @@ class WorldState extends State {
         } else if (current.value == 'start' && got_data) {
             trace('You won!');
             Luxe.renderer.clear_color.tween(1, { g: 1 });
+        } else if (current.value == 'datastore') {
+            if (captured_nodes.indexOf(current) == -1) { // new datastore
+                gain_random_item(current_entity.pos);
+            }
         }
+
+        if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
+        enemy_captured_nodes.remove(node);
+
+        for (itembox in item_boxes) itembox.reset_position();
 
         Luxe.camera.shake(2);
         Main.bloom = 0.6;
         luxe.tween.Actuate.tween(Main, 0.4, { bloom: 0.4 });
+    }
+
+    function gain_random_item(pos :Vector) {
+        var list = item_boxes; // node items
+        if (random.bool()) list = capture_item_boxes; // capture items instead
+
+        if (list.length >= 4) {
+            Notification.Toast({
+                text: 'CAPACITY FULL',
+                color: new Color(1, 0, 1),
+                pos: new Vector(pos.x, pos.y - 120),
+                duration: 8
+            });
+            return;
+        }
+        list.sort(function(a, b) {
+            return a.index - b.index;
+        });
+        var index = 0;
+        for (l in list) {
+            if (index < l.index) break;
+            if (l.index == index) index++;
+        }
+        var item :ItemBox = null;
+        if (list == item_boxes) {
+            item = switch (random.int(0, 2)) {
+                case 0: new ItemBox({
+                    item: 'Enforce',
+                    texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
+                    index: index
+                });
+                case 1: new ItemBox({
+                    item: 'Honeypot',
+                    texture: Luxe.resources.texture('assets/images/honeypot.png'),
+                    index: index
+                });
+                case 2: new ItemBox({
+                    item: 'Nuke',
+                    texture: Luxe.resources.texture('assets/images/mushroom-cloud.png'),
+                    index: index
+                });
+                case _: throw 'Error';
+            }
+        } else {
+            item = switch (random.int(0, 1)) {
+                case 0: new ItemBox({
+                    item: 'Scan',
+                    texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
+                    inverted: true,
+                    index: index
+                });
+                case 1: new ItemBox({
+                    item: 'Trojan',
+                    texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
+                    inverted: true,
+                    index: index
+                });
+                case _: throw 'Error';
+            }
+        }
+
+        Notification.Toast({
+            text: '${item.item.toUpperCase()} ACQUIRED',
+            color: new Color(1, 0, 1),
+            pos: new Vector(pos.x, pos.y - 120),
+            duration: 8
+        });
+
+        list.push(item);
     }
 
     function detected(node :GraphNode) {
