@@ -44,6 +44,8 @@ class WorldState extends State {
     var enemy_capture_node :GraphNode;
     var enemy_captured_nodes :Array<GraphNode>;
 
+    var enemy_icon :Sprite;
+
     var honeypots :Array<GraphNode>;
     var nuked :Array<GraphNode>;
 
@@ -96,6 +98,7 @@ class WorldState extends State {
 
         nodes = new Map();
         node_entities = new Map();
+        enemy_icon = null;
 
         available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split('');
 
@@ -737,6 +740,18 @@ class WorldState extends State {
                     var enemy_capture_entity = node_entities[enemy_capture_node];
                     enemy_capture_entity.color.set(0xFF0000);
                     if (enemy_capture_entity.honeypot != null) enemy_capture_entity.honeypot.destroy();
+
+                    if (enemy_icon == null) {
+                        enemy_icon = new luxe.Sprite({
+                            pos: enemy_capture_entity.pos,
+                            texture: Luxe.resources.texture('assets/images/spider-bot.png'),
+                            scale: new Vector(0.35, 0.35),
+                            color: new Color(0.7, 0, 0),
+                            depth: 50
+                        });
+                    } else {
+                        luxe.tween.Actuate.tween(enemy_icon.pos, 0.2, { x: enemy_capture_entity.pos.x, y: enemy_capture_entity.pos.y });
+                    }
                 }
                 if (enemy_capture_node == current) {
                     Luxe.camera.shake(10);

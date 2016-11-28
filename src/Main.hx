@@ -32,7 +32,7 @@ class Main extends luxe.Game {
         // config.preload.textures.push({ id: 'assets/images/processor.png' });
         config.preload.textures.push({ id: 'assets/images/radar-sweep.png' });
         config.preload.textures.push({ id: 'assets/images/shieldcomb.png' });
-        // config.preload.textures.push({ id: 'assets/images/spider-bot.png' });
+        config.preload.textures.push({ id: 'assets/images/spider-bot.png' });
         // config.preload.textures.push({ id: 'assets/images/stopwatch.png' });
         config.preload.textures.push({ id: 'assets/images/trojan-horse.png' });
         config.preload.textures.push({ id: 'assets/images/black-flag.png' });
