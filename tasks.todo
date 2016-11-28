@@ -1,7 +1,10 @@
 
 # To-do
 
+[ ] Start without items
+[ ] Make node type (datastore) that can be hacked for items
 [ ] Proper levels
+[ ] Modal box for showing info or tutorials
 [ ] Music
 [ ] Sound effects
 [ ] Tutorial
@@ -9,9 +12,19 @@
 [ ] Background image
 [ ] Better arrows (image + UV translation)
 [ ] One-way edges
-[ ] Highscore
+[ ] High score
+[ ] Game over screen
+[ ] Return to game over screen after win/lose
+[ ] Clean up unused assets
 
 
 Misc:
 [ ] Make a player abstraction
 [ ] Put aux. data structures into Node
+
+
+References:
+· Adventures In Level Design: http://www.jorisdormans.nl/pdf/dormans2010_AdventuresInLevelDesign.pdf
+· Content Generation in Dungeon Run: http://www.ludomotion.com/pdfs/ContentGenerationInDungeonRun.pdf
+· Grammars and L-systems with applications to vegetation and levels: http://pcgbook.com/wp-content/uploads/chapter05.pdf
+· The Zelda Dungeon Generator: Adopting Generative Grammars to Create Levels for Action-Adventure Games: http://www.beckylavender.co.uk/uploads/1/5/1/4/15147006/zelda-dissertation.pdf
