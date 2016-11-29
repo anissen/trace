@@ -259,7 +259,8 @@ class WorldState extends State {
     function addSpacersToNode(p :Particle, r :Particle) {
         for (q in s.particles) {
             if (p != q && p != r) {
-                s.makeAttraction( p, q, -SPACER_STRENGTH, 20 );
+                var attraction = s.makeAttraction( p, q, 0, 50 );
+                luxe.tween.Actuate.update(attraction.setStrength, 0.5, [0], [-SPACER_STRENGTH]);
             }
         }
     }
