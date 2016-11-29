@@ -35,13 +35,11 @@ class Reference<T, R> {
 
 class Graph<T> {
     var nodes :Array<Node<T>>;
-    var links :Map<Node<T>, Array<Node<T>>>;
     var key_ref :Map<Node<T>, Node<T>>;
     var references :Array<Reference<T, ReferenceType>>;
 
     public function new() {
         nodes = [];
-        links = new Map();
         key_ref = new Map();
 
         references = [];
@@ -55,7 +53,6 @@ class Graph<T> {
 
     public function add_node(node :Node<T>) {
         nodes.push(node);
-        links[node] = [];
     }
 
     public function get_nodes() {
@@ -103,8 +100,8 @@ class Graph<T> {
         return references
             .filter(function(r) {
                 return switch (r.type) {
-                    case Edge(false): (r.a == node);                // unidirectional
-                    case Edge(true): (r.a == node || r.b == node);  // bidirectional
+                    case Edge(false): (r.a == node);                 // unidirectional
+                    case Edge(true):  (r.a == node || r.b == node);  // bidirectional
                     case _: false;
                 }
             })
@@ -197,10 +194,13 @@ class Graph<T> {
 
         // trace('-------');
         // trace('Step 6: Add edges');
-        for (r in replacement.nodes) {
-            var node = get_node_from_id(r.id);
-            for (l in replacement.get_edges_for_node(r)) {
-                link(node, get_node_from_id(l.id));
+        for (r in replacement.references) {
+            var node1 = get_node_from_id(r.a.id);
+            var node2 = get_node_from_id(r.b.id);
+            switch (r.type) {
+                case Edge(false): throw 'Not yet implemented!';                 // unidirectional
+                case Edge(true): link(node1, node2);  // bidirectional
+                case Key: key_link(node1, node2);
             }
         }
         print();
@@ -303,7 +303,7 @@ class Factory {
         var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
         pattern_replacements.push({ pattern: chain_pattern(), replacements: [chain_replacement1(), chain_replacement2()]});
         // pattern_replacements.push({ pattern: chain_with_key_pattern(), replacements: [chain_with_key_replacement1()]});
-        // pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
+        pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
 
         var replacements = 0;
         var max_replacements = 10;
@@ -314,9 +314,9 @@ class Factory {
                 core.tools.ArrayTools.shuffle(pair.replacements);
                 for (replacement in pair.replacements) {
                     if (g.replace(pair.pattern, replacement)) {
-                        trace('Made a replacement with:');
-                        trace('Pattern:'); pair.pattern.print();
-                        trace('Replacement:'); replacement.print();
+                        // trace('Made a replacement with:');
+                        // trace('Pattern:'); pair.pattern.print();
+                        // trace('Replacement:'); replacement.print();
                         replacements++;
                         replacements_this_pass++;
                     }
@@ -330,6 +330,7 @@ class Factory {
             }
         }
         trace('Made $replacements replacements!');
+        g.print_walk(start);
 
         return g;
     }
