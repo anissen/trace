@@ -250,13 +250,13 @@ class Factory {
     public static function create_graph() {
         var g = new Graph();
         var start = g.create_node('start');
-        // var ds0 = g.create_node('datastore');
-        // var chain1 = g.create_node('ChainWithKey');
-        // var key1 = g.create_node('key');
-        var chainStart = g.create_node('ChainStart');
-        var chainEnd = g.create_node('ChainEnd');
-        // var chain2 = g.create_node('Chain');
-        // var lock1 = g.create_node('lock');
+        var ds0 = g.create_node('datastore');
+        var chainStart1 = g.create_node('ChainStart');
+        var key1 = g.create_node('key');
+        var chainEnd1 = g.create_node('ChainEnd');
+        var chainStart2 = g.create_node('ChainStart');
+        var chainEnd2 = g.create_node('ChainEnd');
+        var lock1 = g.create_node('lock');
         // var ds1 = g.create_node('datastore');
 
         // var chain3 = g.create_node('Chain');
@@ -266,9 +266,19 @@ class Factory {
         // var ds2 = g.create_node('datastore');
         var goal = g.create_node('goal');
 
-        g.link(start, chainStart);
-        g.link(chainStart, chainEnd);
-        g.link(chainEnd, goal);
+        g.link(start, ds0);
+        g.link(start, chainStart1);
+        g.link(chainStart1, chainEnd1);
+        g.link(chainEnd1, key1);
+
+        g.link(start, chainStart2);
+        g.link(chainStart2, chainEnd2);
+
+        g.link(chainEnd1, lock1);
+        g.link(chainEnd2, lock1);
+        g.link(lock1, goal);
+
+        g.key_link(key1, lock1);
 
         // Do I have to use ChainStart + ChainEnd?
 
@@ -301,9 +311,8 @@ class Factory {
         // // g.key_link(chain4, lock2);
 
         var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
-        pattern_replacements.push({ pattern: chain_pattern(), replacements: [chain_replacement1(), chain_replacement2()]});
-        // pattern_replacements.push({ pattern: chain_with_key_pattern(), replacements: [chain_with_key_replacement1()]});
-        pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
+        pattern_replacements.push({ pattern: chain_pattern(), replacements: [chain_replacement1(), chain_replacement2(), chain_with_key_replacement1()]});
+        // pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
 
         var replacements = 0;
         var max_replacements = 10;
@@ -345,35 +354,37 @@ class Factory {
 
     static function chain_replacement1() {
         var g = new Graph();
-        var A = g.create_node('node', 1);
-        var B = g.create_node('node', 2);
+        var A = g.create_node('nodeA', 1);
+        var B = g.create_node('nodeB', 2);
         g.link(A, B);
         return g;
     }
 
     static function chain_replacement2() {
         var g = new Graph();
-        var A = g.create_node('node', 1);
-        var B = g.create_node('node', 2);
-        var C = g.create_node('node', 3);
+        var A = g.create_node('nodeC', 1);
+        var B = g.create_node('nodeD', 2);
+        var C = g.create_node('nodeE', 3);
         g.link(A, B);
         g.link(A, C);
         return g;
     }
 
-    static function chain_with_key_pattern() {
-        var g = new Graph();
-        var A = g.create_node('ChainWithKey', 1);
-        return g;
-    }
+    // static function chain_with_key_pattern() {
+    //     var g = new Graph();
+    //     var A = g.create_node('ChainStart', 1);
+    //     var B = g.create_node('ChainEnd', 2);
+    //     g.link(A, B);
+    //     return g;
+    // }
 
     static function chain_with_key_replacement1() {
         var g = new Graph();
-        var A = g.create_node('node', 3);
-        var B = g.create_node('node', 2);
-        var C = g.create_node('key', 1);
+        var A = g.create_node('nodeF', 1);
+        var B = g.create_node('nodeG', 3);
+        var C = g.create_node('nodeH', 2);
         g.link(A, B);
-        g.link(A, C);
+        g.link(B, C);
         return g;
     }
 
