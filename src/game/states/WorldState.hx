@@ -579,6 +579,10 @@ class WorldState extends State {
         if (enemy_in_game && (node == enemy_current)) return; // cannot select enemy node
         if (nuked.indexOf(node) > -1) return; // cannot select nuked node
 
+        if (current != null && node_entities.exists(current)) {
+            node_entities[current].color.rgb(0x2ECC40); // .rgb(0x44FF44);
+        }
+
         current = node;
         if (!nodes.exists(node)) {
             nodes[node] = add_node();
@@ -587,12 +591,8 @@ class WorldState extends State {
         if (!node_entities.exists(node)) {
             node_entities[node] = create_node_entity(p, node);
         }
-        for (node in captured_nodes) {
-            node_entities[node].color.rgb(0x2ECC40); // .rgb(0x44FF44);
-        }
         var current_entity = node_entities[current];
         current_entity.color.rgb(0xF012BE); // .rgb(0xDD00FF);
-        // current_entity.show_item('Trojan');
         add_linked_nodes(node);
 
         if (current.value == 'goal' && !got_data) {
@@ -822,10 +822,6 @@ class WorldState extends State {
                             color: new Color(0.7, 0, 0),
                             depth: 50
                         });
-                    } else {
-                        luxe.tween.Actuate.tween(enemy_icon.pos, 0.2, { x: enemy_capture_entity.pos.x, y: enemy_capture_entity.pos.y }).onComplete(function() {
-                            enemy_icon.pos = enemy_capture_entity.pos;
-                        });
                     }
                 }
                 if (enemy_capture_node == current) {
@@ -844,6 +840,13 @@ class WorldState extends State {
 
                 enemy_capture_node = get_enemy_capture_node();
                 enemy_capture_time = get_enemy_capture_time();
+            }
+        }
+
+        if (enemy_icon != null && enemy_current != null) {
+            if (node_entities.exists(enemy_current)) {
+                var enemy_capture_entity = node_entities[enemy_current];
+                enemy_icon.pos.lerp(enemy_capture_entity.pos, 10 * dt);
             }
         }
     }
