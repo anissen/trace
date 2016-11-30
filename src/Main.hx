@@ -48,6 +48,19 @@ class Main extends luxe.Game {
         #end
 
         config.preload.sounds.push({ id: 'assets/music/tech_industry.ogg', is_stream: true });
+
+        config.preload.sounds.push({ id: 'assets/sounds/alarm.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/capture.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/click1.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/click2.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/click3.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/enemy_capture.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/game_over.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/info.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/pickup.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/select.wav', is_stream: false });
+        config.preload.sounds.push({ id: 'assets/sounds/use_item.wav', is_stream: false });
+
         return config;
     }
 
@@ -78,7 +91,7 @@ class Main extends luxe.Game {
         states.set(WorldState.StateId);
 
         var music = Luxe.resources.audio('assets/music/tech_industry.ogg');
-        Luxe.audio.loop(music.source);
+        Luxe.audio.loop(music.source, 0.8);
 
         var theme :pgr.dconsole.DCThemes.Theme = {
     		CON_C 		: 0x353535,

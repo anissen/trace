@@ -532,6 +532,7 @@ class WorldState extends State {
             }
             var item = items.find(function(i) { return (i.index == index); });
             if (item == null) return;
+            play_sound('use_item.wav');
             handle_item(item.item);
             items.remove(item);
             item.destroy();
@@ -553,6 +554,9 @@ class WorldState extends State {
                 if (!already_captured && is_locked(n)) return;
                 capture_time = (already_captured ? 0.2 : entity.capture_time);
                 capture_node = n;
+
+                var i = Luxe.utils.random.int(1, 3);
+                play_sound('click$i.wav');
                 return;
             }
         }
@@ -599,8 +603,10 @@ class WorldState extends State {
                 pos: new Vector(current_entity.pos.x, current_entity.pos.y - 120),
                 duration: 10
             });
+            play_sound('pickup.wav');
         } else if (current.value == 'start' && got_data) {
             trace('You won!');
+            play_sound('game_over.wav');
             Luxe.renderer.clear_color.tween(1, { g: 1 });
         } else if (current.value == 'datastore') {
             if (captured_nodes.indexOf(current) == -1) { // new datastore
@@ -608,7 +614,12 @@ class WorldState extends State {
             }
         }
 
-        if (captured_nodes.indexOf(node) < 0) captured_nodes.push(node);
+        if (captured_nodes.indexOf(node) < 0) {
+            play_sound('capture.wav');
+            captured_nodes.push(node);
+        } else {
+            play_sound('select.wav');
+        }
         enemy_captured_nodes.remove(node);
 
         for (itembox in item_boxes) itembox.reset_position();
@@ -616,6 +627,11 @@ class WorldState extends State {
         Luxe.camera.shake(2);
         Main.bloom = 0.6;
         luxe.tween.Actuate.tween(Main, 0.4, { bloom: 0.4 });
+    }
+
+    function play_sound(id :String) {
+        var sound = Luxe.resources.audio('assets/sounds/$id');
+        Luxe.audio.play(sound.source);
     }
 
     function gain_random_item(pos :Vector) {
@@ -677,6 +693,8 @@ class WorldState extends State {
             }
         }
 
+        play_sound('pickup.wav');
+
         Notification.Toast({
             text: '${item.item.toUpperCase()} ACQUIRED',
             color: new Color(1, 0, 1),
@@ -707,6 +725,8 @@ class WorldState extends State {
             color: new Color(1, 0, 0),
             pos: node_entities[node].pos
         });
+
+        play_sound('alarm.wav');
 
         // flash warning icon
         stopwatchIcon.color = new Color(1, 0, 0);
@@ -788,7 +808,7 @@ class WorldState extends State {
 
                 enemy_current = enemy_capture_node;
 
-                captured_nodes.remove(enemy_capture_node);
+                // captured_nodes.remove(enemy_capture_node);
                 if (node_entities.exists(enemy_capture_node)) {
                     var enemy_capture_entity = node_entities[enemy_capture_node];
                     enemy_capture_entity.color.set(0xFF0000);
@@ -809,6 +829,7 @@ class WorldState extends State {
                     }
                 }
                 if (enemy_capture_node == current) {
+                    play_sound('game_over.wav');
                     Luxe.camera.shake(10);
                     Luxe.renderer.clear_color.tween(0.3, { r: 0.9 });
                     luxe.tween.Actuate.tween(Main, 0.3, { shift: 0.2, bloom: 0.6 });
@@ -818,6 +839,8 @@ class WorldState extends State {
                 }
                 enemy_captured_nodes.push(enemy_capture_node);
                 honeypots.remove(enemy_capture_node);
+
+                play_sound('enemy_capture.wav');
 
                 enemy_capture_node = get_enemy_capture_node();
                 enemy_capture_time = get_enemy_capture_time();
