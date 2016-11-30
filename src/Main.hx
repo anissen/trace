@@ -47,6 +47,7 @@ class Main extends luxe.Game {
         config.preload.shaders.push({ id: 'circuits', frag_id: 'assets/shaders/circuits.glsl', vert_id: 'default' });
         #end
 
+        config.preload.sounds.push({ id: 'assets/music/tech_industry.ogg', is_stream: true });
         return config;
     }
 
@@ -75,6 +76,9 @@ class Main extends luxe.Game {
         var worldstate = new WorldState();
         states.add(worldstate);
         states.set(WorldState.StateId);
+
+        var music = Luxe.resources.audio('assets/music/tech_industry.ogg');
+        Luxe.audio.loop(music.source);
 
         var theme :pgr.dconsole.DCThemes.Theme = {
     		CON_C 		: 0x353535,
