@@ -211,6 +211,10 @@ class WorldState extends State {
                 texture = Luxe.resources.texture('assets/images/id-card.png');
         }
 
+        if (available_keys.length == 0) {
+            available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split(''); // HACK
+        }
+
         var entity = new game.entities.Node({
             geometry: Luxe.draw.ngon({
                 x: p.position.x,
@@ -308,18 +312,27 @@ class WorldState extends State {
     override function onrender() {
         overlay_filter.pos = Luxe.camera.view.center.clone();
 
-        for (r in graph.get_edges()) {
+        for (r in graph.get_references()) {
             if (!node_entities.exists(r.a) || !node_entities.exists(r.b)) continue;
 
-            var line = Luxe.draw.line({
-                p0: node_entities[r.a].pos,
-                p1: node_entities[r.b].pos,
-                immediate: true,
-                depth: 5
-            });
-            if (captured_nodes.indexOf(r.b) == -1 && is_locked(r.b)) {
-                line.color = new Color(1, 0, 0, 0.5);
+            if (r.type == Key && captured_nodes.indexOf(r.a) == -1) { // locked node with discovered (uncaptured) key
+                Luxe.draw.line({
+                    p0: node_entities[r.a].pos,
+                    p1: node_entities[r.b].pos,
+                    color: new Color(0, 1, 0, 0.3),
+                    immediate: true,
+                    depth: 5
+                });
+            } else if (r.type != Key) {
+                Luxe.draw.line({
+                    p0: node_entities[r.a].pos,
+                    p1: node_entities[r.b].pos,
+                    immediate: true,
+                    color: new Color(1, 1, 1, (is_locked(r.b) ? 0.1 : 1)),
+                    depth: 5
+                });
             }
+
             // for (key in graph.get_keys_for_node(r.b)) {
             //     if (!node_entities.exists(key)) continue;
             //     Luxe.draw.line({
