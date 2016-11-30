@@ -190,18 +190,18 @@ class WorldState extends State {
 
     function create_node_entity(p :Particle, n :GraphNode) {
         var detection = 10;
-        var capture_time = 2;
+        var capture_time = 1.5;
         var texture = null;
         switch (n.value) {
             case 'start':
                 texture = Luxe.resources.texture('assets/images/black-flag.png');
             case 'goal':
                 detection = 20;
-                capture_time = 4;
+                capture_time = 3;
                 texture = Luxe.resources.texture('assets/images/database.png');
             case 'datastore':
                 detection = 20;
-                capture_time = 4;
+                capture_time = 3;
                 texture = Luxe.resources.texture('assets/images/database.png');
             case 'node':
                 // default values
