@@ -250,12 +250,13 @@ class Factory {
     public static function create_graph() {
         var g = new Graph();
         var start = g.create_node('start');
-        var ds0 = g.create_node('datastore');
+        var ds1 = g.create_node('datastore');
         var chainStart1 = g.create_node('ChainStart');
         var key1 = g.create_node('key');
         var chainEnd1 = g.create_node('ChainEnd');
         var chainStart2 = g.create_node('ChainStart');
         var chainEnd2 = g.create_node('ChainEnd');
+        var ds2 = g.create_node('datastore');
         var lock1 = g.create_node('lock');
         // var ds1 = g.create_node('datastore');
 
@@ -266,7 +267,9 @@ class Factory {
         // var ds2 = g.create_node('datastore');
         var goal = g.create_node('goal');
 
-        g.link(start, ds0);
+        g.link(start, ds1);
+
+        // chain set 1
         g.link(start, chainStart1);
         g.link(chainStart1, chainEnd1);
         g.link(chainEnd1, key1);
@@ -276,11 +279,30 @@ class Factory {
 
         g.link(chainEnd1, lock1);
         g.link(chainEnd2, lock1);
-        g.link(lock1, goal);
+        g.link(lock1, ds2);
 
-        // Another double chain before the goal?
+        // chain set 2
+        var chainStart3 = g.create_node('ChainStart');
+        var key2 = g.create_node('key');
+        var chainEnd3 = g.create_node('ChainEnd');
+        var chainStart4 = g.create_node('ChainStart');
+        var chainEnd4 = g.create_node('ChainEnd');
+        var lock2 = g.create_node('lock');
+
+        g.link(lock1, chainStart3);
+        g.link(chainStart3, chainEnd3);
+        g.link(chainEnd3, key2);
+
+        g.link(lock1, chainStart4);
+        g.link(chainStart4, chainEnd4);
+
+        g.link(chainEnd3, lock2);
+        g.link(chainEnd4, lock2);
+
+        g.link(lock2, goal);
 
         g.key_link(key1, lock1);
+        g.key_link(key2, lock2);
 
 
         // Do I have to use ChainStart + ChainEnd?
@@ -315,7 +337,7 @@ class Factory {
 
         var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
         pattern_replacements.push({ pattern: chain_pattern(), replacements: [chain_replacement1(), chain_replacement2(), chain_with_key_replacement1()]});
-        pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
+        // pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
 
         var replacements = 0;
         var max_replacements = 10;
