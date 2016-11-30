@@ -160,7 +160,7 @@ class Graph<T> {
             for (n in nodes) n.id = null;
             return false;
         }
-        print();
+        // print();
 
         // trace('-------');
         // trace('Step 3: Remove links');
@@ -173,14 +173,14 @@ class Graph<T> {
                 }
             }
         }
-        print();
+        // print();
 
         // trace('-------');
         // trace('Step 4: Replace nodes');
         for (n in marked) {
             n.value = replacement.get_node_from_id(n.id).value;
         }
-        print();
+        // print();
 
         // trace('-------');
         // trace('Step 5: Add new nodes');
@@ -190,7 +190,7 @@ class Graph<T> {
                 create_node(r.value, r.id);
             }
         }
-        print();
+        // print();
 
         // trace('-------');
         // trace('Step 6: Add edges');
@@ -203,14 +203,14 @@ class Graph<T> {
                 case Key: key_link(node1, node2);
             }
         }
-        print();
+        // print();
 
         // trace('-------');
         // trace('Step 7: Remove ids');
         for (n in nodes) {
             n.id = null;
         }
-        print();
+        // print();
 
         return true;
     }
@@ -281,6 +281,8 @@ class Factory {
         g.link(chainEnd2, lock1);
         g.link(lock1, ds2);
 
+        g.key_link(key1, lock1);
+
         // chain set 2
         var chainStart3 = g.create_node('ChainStart');
         var key2 = g.create_node('key');
@@ -301,43 +303,11 @@ class Factory {
 
         g.link(lock2, goal);
 
-        g.key_link(key1, lock1);
         g.key_link(key2, lock2);
 
-
-        // Do I have to use ChainStart + ChainEnd?
-
-        // // start chains
-        // g.link(start, chain1);
-        // g.link(start, chain2);
-        // g.link(start, ds0);
-        //
-        // // chain -> (key) -> lock
-        // // g.link(chain1, key1); g.link(key1, lock1);
-        // g.link(chain1, lock1);
-        // g.link(chain2, lock1);
-        //
-        // // g.link(lock1, ds1);
-        // //
-        // // g.link(ds1, chain3);
-        // // g.link(ds1, chain4);
-        // //
-        // // // chain -> (key) -> lock
-        // // g.link(chain3, lock2);
-        // // g.link(chain4, lock2);
-        //
-        // // g.link(lock2, goal);
-        // // g.link(lock2, ds2);
-        //
-        // g.link(lock1, goal);
-        // g.link(lock1, ds2);
-        //
-        // g.key_link(chain1, lock1);
-        // // g.key_link(chain4, lock2);
-
         var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
-        pattern_replacements.push({ pattern: chain_pattern(), replacements: [chain_replacement1(), chain_replacement2(), chain_with_key_replacement1()]});
-        // pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
+        pattern_replacements.push({ pattern: chain_pattern(), replacements: [chain_replacement1(), chain_replacement2(), chain_replacement3()]});
+        pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement3(), nodes_replacement2(), nodes_replacement1()]});
 
         var replacements = 0;
         var max_replacements = 10;
@@ -353,6 +323,9 @@ class Factory {
                         // trace('Replacement:'); replacement.print();
                         replacements++;
                         replacements_this_pass++;
+
+                        // Test: remove replacement to avoid loops
+                        pair.replacements.remove(replacement);
                     }
                     if (replacements >= max_replacements) break;
                 }
@@ -364,7 +337,7 @@ class Factory {
             }
         }
         trace('Made $replacements replacements!');
-        g.print_walk(start);
+        // g.print_walk(start);
 
         return g;
     }
@@ -395,15 +368,7 @@ class Factory {
         return g;
     }
 
-    // static function chain_with_key_pattern() {
-    //     var g = new Graph();
-    //     var A = g.create_node('ChainStart', 1);
-    //     var B = g.create_node('ChainEnd', 2);
-    //     g.link(A, B);
-    //     return g;
-    // }
-
-    static function chain_with_key_replacement1() {
+    static function chain_replacement3() {
         var g = new Graph();
         var A = g.create_node('node', 1);
         var B = g.create_node('node', 3);
@@ -417,6 +382,7 @@ class Factory {
         var g = new Graph();
         var A = g.create_node('node', 1);
         var B = g.create_node('node', 2);
+        g.link(A, B);
         return g;
     }
 
@@ -441,6 +407,14 @@ class Factory {
         g.link(B, C);
         g.link(A, D);
         g.key_link(D, B);
+        return g;
+    }
+
+    static function nodes_replacement3() {
+        var g = new Graph();
+        var A = g.create_node('datastore', 1);
+        var B = g.create_node('node', 2);
+        g.link(A, B);
         return g;
     }
 }
