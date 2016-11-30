@@ -454,9 +454,9 @@ class WorldState extends State {
                     var entity = node_entities[current];
                     if (entity.enforced) return;
                     entity.enforced = true;
-                    entity.capture_time += 10;
+                    entity.capture_time += 5;
                     if (enemy_capture_node == current) {
-                        enemy_capture_time += 10;
+                        enemy_capture_time += 5;
                     }
                     new luxe.Visual({
                         geometry: Luxe.draw.ngon({
@@ -803,7 +803,9 @@ class WorldState extends State {
                             depth: 50
                         });
                     } else {
-                        luxe.tween.Actuate.tween(enemy_icon.pos, 0.2, { x: enemy_capture_entity.pos.x, y: enemy_capture_entity.pos.y });
+                        luxe.tween.Actuate.tween(enemy_icon.pos, 0.2, { x: enemy_capture_entity.pos.x, y: enemy_capture_entity.pos.y }).onComplete(function() {
+                            enemy_icon.pos = enemy_capture_entity.pos;
+                        });
                     }
                 }
                 if (enemy_capture_node == current) {

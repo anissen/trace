@@ -278,7 +278,10 @@ class Factory {
         g.link(chainEnd2, lock1);
         g.link(lock1, goal);
 
+        // Another double chain before the goal?
+
         g.key_link(key1, lock1);
+
 
         // Do I have to use ChainStart + ChainEnd?
 
@@ -312,7 +315,7 @@ class Factory {
 
         var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
         pattern_replacements.push({ pattern: chain_pattern(), replacements: [chain_replacement1(), chain_replacement2(), chain_with_key_replacement1()]});
-        // pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
+        pattern_replacements.push({ pattern: nodes_pattern(), replacements: [nodes_replacement1(), nodes_replacement2()]});
 
         var replacements = 0;
         var max_replacements = 10;
@@ -354,17 +357,17 @@ class Factory {
 
     static function chain_replacement1() {
         var g = new Graph();
-        var A = g.create_node('nodeA', 1);
-        var B = g.create_node('nodeB', 2);
+        var A = g.create_node('node', 1);
+        var B = g.create_node('node', 2);
         g.link(A, B);
         return g;
     }
 
     static function chain_replacement2() {
         var g = new Graph();
-        var A = g.create_node('nodeC', 1);
-        var B = g.create_node('nodeD', 2);
-        var C = g.create_node('nodeE', 3);
+        var A = g.create_node('node', 1);
+        var B = g.create_node('node', 2);
+        var C = g.create_node('node', 3);
         g.link(A, B);
         g.link(A, C);
         return g;
@@ -380,9 +383,9 @@ class Factory {
 
     static function chain_with_key_replacement1() {
         var g = new Graph();
-        var A = g.create_node('nodeF', 1);
-        var B = g.create_node('nodeG', 3);
-        var C = g.create_node('nodeH', 2);
+        var A = g.create_node('node', 1);
+        var B = g.create_node('node', 3);
+        var C = g.create_node('node', 2);
         g.link(A, B);
         g.link(B, C);
         return g;
