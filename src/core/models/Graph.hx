@@ -37,8 +37,10 @@ class Graph<T> {
     var nodes :Array<Node<T>>;
     var key_ref :Map<Node<T>, Node<T>>;
     var references :Array<Reference<T, ReferenceType>>;
+    public var name :Null<String> = null;
 
-    public function new() {
+    public function new(?name :String) {
+        this.name = name;
         nodes = [];
         key_ref = new Map();
 
@@ -318,6 +320,7 @@ class Factory {
                 core.tools.ArrayTools.shuffle(pair.replacements);
                 for (replacement in pair.replacements) {
                     if (g.replace(pair.pattern, replacement)) {
+                        trace('Replaced "${pair.pattern.name}" with ${replacement.name}');
                         // trace('Made a replacement with:');
                         // trace('Pattern:'); pair.pattern.print();
                         // trace('Replacement:'); replacement.print();
@@ -343,7 +346,7 @@ class Factory {
     }
 
     static function chain_pattern() {
-        var g = new Graph();
+        var g = new Graph('chain_pattern');
         var A = g.create_node('ChainStart', 1);
         var B = g.create_node('ChainEnd', 2);
         g.link(A, B);
@@ -351,7 +354,7 @@ class Factory {
     }
 
     static function chain_replacement1() {
-        var g = new Graph();
+        var g = new Graph('chain_replacement1');
         var A = g.create_node('node', 1);
         var B = g.create_node('node', 2);
         g.link(A, B);
@@ -359,7 +362,7 @@ class Factory {
     }
 
     static function chain_replacement2() {
-        var g = new Graph();
+        var g = new Graph('chain_replacement2');
         var A = g.create_node('node', 1);
         var B = g.create_node('node', 2);
         var C = g.create_node('node', 3);
@@ -369,7 +372,7 @@ class Factory {
     }
 
     static function chain_replacement3() {
-        var g = new Graph();
+        var g = new Graph('chain_replacement3');
         var A = g.create_node('node', 1);
         var B = g.create_node('node', 3);
         var C = g.create_node('node', 2);
@@ -379,7 +382,7 @@ class Factory {
     }
 
     static function nodes_pattern() {
-        var g = new Graph();
+        var g = new Graph('nodes_pattern');
         var A = g.create_node('node', 1);
         var B = g.create_node('node', 2);
         g.link(A, B);
@@ -387,7 +390,7 @@ class Factory {
     }
 
     static function nodes_replacement1() {
-        var g = new Graph();
+        var g = new Graph('nodes_replacement1');
         var A = g.create_node('node', 1);
         var B = g.create_node('key', 3);
         var C = g.create_node('lock', 2);
@@ -398,7 +401,7 @@ class Factory {
     }
 
     static function nodes_replacement2() {
-        var g = new Graph();
+        var g = new Graph('nodes_replacement2');
         var A = g.create_node('node', 1);
         var B = g.create_node('lock', 3);
         var C = g.create_node('datastore', 4);
@@ -411,7 +414,7 @@ class Factory {
     }
 
     static function nodes_replacement3() {
-        var g = new Graph();
+        var g = new Graph('nodes_replacement3');
         var A = g.create_node('datastore', 1);
         var B = g.create_node('node', 2);
         g.link(A, B);
@@ -551,7 +554,7 @@ class Test2 {
     static function get_graph_replacement2() {
         var g = new Graph();
         var A = g.create_node('gate', 1);
-        var B = g.create_node('dataserver', 2);
+        var B = g.create_node('datastore', 2);
         g.link(A, B);
         return g;
     }
