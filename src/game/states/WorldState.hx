@@ -76,89 +76,7 @@ class WorldState extends State {
     }
 
     override function init() {
-        overlay_batcher = Luxe.renderer.create_batcher({
-            name: 'overlay',
-            layer: 1000
-        });
-        overlay_batcher.on(prerender, function(b :Batcher) {
-            Luxe.renderer.blend_mode(BlendMode.src_alpha, BlendMode.one);
-        });
-        overlay_batcher.on(postrender, function(b :Batcher) {
-            Luxe.renderer.blend_mode();
-        });
 
-        #if with_shader
-        circuits_shader = Luxe.resources.shader('circuits');
-        circuits_shader.set_vector2('resolution', Luxe.screen.size);
-        circuits_sprite = new Sprite({
-            pos: Luxe.camera.center,
-            size: Luxe.screen.size,
-            shader: circuits_shader,
-            depth: -1000
-        });
-        #end
-
-        nodes = new Map();
-        node_entities = new Map();
-        random = new luxe.utils.Random(Math.random() /* TODO: Use seed */);
-
-        enemy_icon = null;
-
-        available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split('');
-
-        current = null;
-        capture_node = null;
-        capture_time = 0;
-        captured_nodes = [];
-
-        got_data = false;
-
-        enemy_in_game = false;
-        enemy_current = null;
-        enemy_capture_node = null;
-        enemy_capture_time = 0;
-        enemy_captured_nodes = [];
-
-        honeypots = [];
-        nuked = [];
-
-        ui_batcher = Luxe.renderer.create_batcher({
-            name: 'ui',
-            layer: 500
-        });
-
-        countdownText = new Text({
-            text: '--:--:--',
-            pos: new Vector(Luxe.screen.mid.x, 50),
-            point_size: 64,
-            align: center,
-            align_vertical: center,
-            batcher: ui_batcher
-        });
-
-        stopwatchIcon = new Sprite({
-            pos: new Vector(Luxe.screen.w * 0.70, 55),
-            texture: Luxe.resources.texture('assets/images/hazard-sign.png'),
-            scale: new Vector(0.25, 0.25),
-            batcher: ui_batcher
-        });
-
-        // test
-        graph = core.models.Graph.Factory.create_graph(random_int);
-
-        setup_particles();
-
-        item_boxes = [];
-        capture_item_boxes = [];
-
-        var start_node = graph.get_node('start');
-        select_node(start_node);
-
-        countdown = 60;
-
-        haxe.Timer.delay(function() {
-            detected(start_node);
-        }, Math.floor(countdown * 1000));
     }
 
     function add_linked_nodes(n :GraphNode) {
@@ -294,6 +212,17 @@ class WorldState extends State {
         Luxe.camera.zoom = 0.1;
         luxe.tween.Actuate.tween(Luxe.camera, 0.5, { zoom: 1 });
 
+        overlay_batcher = Luxe.renderer.create_batcher({
+            name: 'overlay',
+            layer: 1000
+        });
+        overlay_batcher.on(prerender, function(b :Batcher) {
+            Luxe.renderer.blend_mode(BlendMode.src_alpha, BlendMode.one);
+        });
+        overlay_batcher.on(postrender, function(b :Batcher) {
+            Luxe.renderer.blend_mode();
+        });
+
         overlay_filter = new Sprite({
             centered: true,
             pos: Luxe.camera.pos.clone(),
@@ -303,7 +232,84 @@ class WorldState extends State {
             depth: 1000
         });
         overlay_filter.color.a = 0.6;
+
+        #if with_shader
+        circuits_shader = Luxe.resources.shader('circuits');
+        circuits_shader.set_vector2('resolution', Luxe.screen.size);
+        circuits_sprite = new Sprite({
+            pos: Luxe.camera.center,
+            size: Luxe.screen.size,
+            shader: circuits_shader,
+            depth: -1000
+        });
+        #end
+
+        nodes = new Map();
+        node_entities = new Map();
+        random = new luxe.utils.Random(Math.random() /* TODO: Use seed */);
+
+        enemy_icon = null;
+
+        available_keys = 'ABCDEFGHIJKLMNOPQRSTUVXYZ'.split('');
+
+        current = null;
+        capture_node = null;
+        capture_time = 0;
+        captured_nodes = [];
+
+        got_data = false;
+
+        enemy_in_game = false;
+        enemy_current = null;
+        enemy_capture_node = null;
+        enemy_capture_time = 0;
+        enemy_captured_nodes = [];
+
+        honeypots = [];
+        nuked = [];
+
+        ui_batcher = Luxe.renderer.create_batcher({
+            name: 'ui',
+            layer: 500
+        });
+
+        countdownText = new Text({
+            text: '--:--:--',
+            pos: new Vector(Luxe.screen.mid.x, 50),
+            point_size: 64,
+            align: center,
+            align_vertical: center,
+            batcher: ui_batcher
+        });
+
+        stopwatchIcon = new Sprite({
+            pos: new Vector(Luxe.screen.w * 0.70, 55),
+            texture: Luxe.resources.texture('assets/images/hazard-sign.png'),
+            scale: new Vector(0.25, 0.25),
+            batcher: ui_batcher
+        });
+
+        // test
+        graph = core.models.Graph.Factory.create_graph(random_int);
+
+        setup_particles();
+
+        item_boxes = [];
+        capture_item_boxes = [];
+
+        var start_node = graph.get_node('start');
+        select_node(start_node);
+
+        countdown = 60;
+
+        haxe.Timer.delay(function() {
+            detected(start_node);
+        }, Math.floor(countdown * 1000));
     }
+
+    // override function onwindowresized(event :luxe.Screen.WindowEvent) {
+    //
+    // }
 
     override function onleave(_) {
         Luxe.scene.empty();

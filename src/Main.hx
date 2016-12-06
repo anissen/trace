@@ -86,9 +86,9 @@ class Main extends luxe.Game {
         // postprocess.toggle(); // disable shader for now
 
         states = new States({ name: 'state_machine' });
-        var worldstate = new WorldState();
-        states.add(worldstate);
-        states.set(WorldState.StateId);
+        states.add(new MenuState());
+        states.add(new WorldState());
+        states.set(MenuState.StateId);
 
         var music = Luxe.resources.audio('assets/music/tech_industry.ogg');
         Luxe.audio.loop(music.source, 0.8);
@@ -117,7 +117,7 @@ class Main extends luxe.Game {
         // DC.log("This text will be logged.");
         DC.registerFunction(function() { postprocess.toggle(); }, "toggle_shader");
         DC.registerObject(Main, "Main");
-        DC.registerObject(worldstate, "world");
+        // DC.registerObject(worldstate, "world");
         // DC.registerClass(Math, "Math");
     }
 
@@ -143,10 +143,11 @@ class Main extends luxe.Game {
     }
 
     override function onkeyup(e :KeyEvent) {
+        /*
         if (e.keycode == Key.enter && e.mod.alt) {
             fullscreen = !fullscreen;
-            Luxe.snow.runtime.window_fullscreen(fullscreen, true /* true-fullscreen */);
-        } /* else if (e.keycode == Key.key_s) {
+            Luxe.snow.runtime.window_fullscreen(fullscreen, true); // true for true-fullscreen
+        } else if (e.keycode == Key.key_s) {
             // save state
             Luxe.io.string_save('save', 'blah test');
         } else if (e.keycode == Key.key_l) {
