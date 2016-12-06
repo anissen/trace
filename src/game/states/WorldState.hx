@@ -144,7 +144,7 @@ class WorldState extends State {
         });
 
         // test
-        graph = core.models.Graph.Factory.create_graph();
+        graph = core.models.Graph.Factory.create_graph(random_int);
 
         setup_particles();
 
@@ -227,7 +227,7 @@ class WorldState extends State {
             texture: texture,
             depth: 10,
             value: n.to_string(),
-            key: available_keys.splice(Math.floor(available_keys.length * Math.random()), 1)[0],
+            key: available_keys.splice(random.int(available_keys.length), 1)[0],
             detection: detection,
             capture_time: capture_time
         });
@@ -685,7 +685,7 @@ class WorldState extends State {
         }
         var item :ItemBox = null;
         if (list == item_boxes) {
-            item = switch (random.int(0, 2)) {
+            item = switch (random.int(3)) {
                 case 0: new ItemBox({
                     item: 'Enforce',
                     texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
@@ -704,7 +704,7 @@ class WorldState extends State {
                 case _: throw 'Error';
             }
         } else {
-            item = switch (random.int(0, 1)) {
+            item = switch (random.int(2)) {
                 case 0: new ItemBox({
                     item: 'Scan',
                     texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
@@ -819,7 +819,7 @@ class WorldState extends State {
                 }
                 select_node(capture_node);
 
-                if (!captured_by_player && Math.random() < capture_entity.detection / 100) {
+                if (!captured_by_player && random.get() < capture_entity.detection / 100) {
                     detected(capture_node);
                 }
 
@@ -906,7 +906,11 @@ class WorldState extends State {
         if (node != null) return node;
 
         // just pick a random node
-        return core.tools.ArrayTools.random(links);
+        return core.tools.ArrayTools.random(links, random_int);
+    }
+
+    function random_int(max :Int) {
+        return random.int(max);
     }
 
     function get_enemy_capture_time() {

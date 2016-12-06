@@ -122,9 +122,9 @@ class Graph<T> {
             .map(function(r) { return r.b; });
     }
 
-    public function mark_pattern(pattern :Graph<T>) :Bool {
+    public function mark_pattern(pattern :Graph<T>, random :Int->Int) :Bool {
         var first_nodes = nodes.filter(function(n) { return (n.value == pattern.nodes[0].value); });
-        core.tools.ArrayTools.shuffle(first_nodes);
+        core.tools.ArrayTools.shuffle(first_nodes, random);
         for (n in first_nodes) {
             if (try_mark_pattern(n, pattern)) return true;
             for (n in pattern.nodes) n.id = null; // mark pattern failed, reset marks
@@ -143,7 +143,7 @@ class Graph<T> {
         return true;
     }
 
-    public function replace(pattern :Graph<T>, replacement :Graph<T>) :Bool {
+    public function replace(pattern :Graph<T>, replacement :Graph<T>, random :Int->Int) :Bool {
         /*
         Step 1: Select a group of nodes for replacement as described by a particular rule
         Step 2: The selected nodes are numbered according to the left-hand side of the rule.
@@ -158,7 +158,7 @@ class Graph<T> {
         // Step 2: Rename nodes according to pattern
         // trace('-------');
         // trace('Step 1 & Step 2: Mark nodes');
-        if (!mark_pattern(pattern)) {
+        if (!mark_pattern(pattern, random)) {
             // reset ID's
             for (n in nodes) n.id = null;
             return false;
@@ -250,7 +250,9 @@ class Graph<T> {
 }
 
 class Factory {
-    public static function create_graph() {
+    public static function create_graph(?random :Int->Int) {
+        if (random == null) random = Std.random;
+
         var g = new Graph();
         var start = g.create_node('start');
         var ds1 = g.create_node('datastore');
@@ -316,11 +318,11 @@ class Factory {
         var max_replacements = 10;
         while (replacements < max_replacements) {
             var replacements_this_pass = 0;
-            core.tools.ArrayTools.shuffle(pattern_replacements);
+            core.tools.ArrayTools.shuffle(pattern_replacements, random);
             for (pair in pattern_replacements) {
-                core.tools.ArrayTools.shuffle(pair.replacements);
+                core.tools.ArrayTools.shuffle(pair.replacements, random);
                 for (replacement in pair.replacements) {
-                    if (g.replace(pair.pattern, replacement)) {
+                    if (g.replace(pair.pattern, replacement, random)) {
                         trace('Replaced "${pair.pattern.name}" with ${replacement.name}');
                         // trace('Made a replacement with:');
                         // trace('Pattern:'); pair.pattern.print();
@@ -419,187 +421,6 @@ class Factory {
         var A = g.create_node('datastore', 1);
         var B = g.create_node('node', 2);
         g.link(A, B);
-        return g;
-    }
-}
-
-class Test {
-    public static function get_graph() {
-        var g = new Graph();
-        var A = g.create_node('A');
-        var B = g.create_node('B');
-        var b = g.create_node('b');
-        var a1 = g.create_node('a1');
-        var a2 = g.create_node('a2');
-        g.link(A, B);
-        g.link(A, b);
-        g.link(B, a1);
-        g.link(B, a2);
-        g.print();
-
-        g.replace(get_graph_pattern(), get_graph_replacement());
-
-        return g;
-    }
-
-    static function get_graph_pattern() {
-        var g = new Graph();
-        var A = g.create_node('A', 1);
-        var B = g.create_node('B', 2);
-        g.link(A, B);
-        return g;
-    }
-
-    static function get_graph_replacement() {
-        var g = new Graph();
-        var A = g.create_node('A', 2);
-        var B = g.create_node('B', 4);
-        var b = g.create_node('b', 3);
-        var a = g.create_node('a', 1);
-        g.link(A, B);
-        g.link(B, b);
-        g.link(b, a);
-        return g;
-    }
-}
-
-class Test2 {
-    public static function get_graph() {
-        var g = new Graph();
-        var start = g.create_node('start');
-        var r1 = g.create_node('room');
-        var r2 = g.create_node('room');
-        var gate = g.create_node('gate');
-        var r3 = g.create_node('room');
-        var r4 = g.create_node('room');
-        var goal = g.create_node('goal');
-        g.link(start, r1);
-        g.link(r1, r2);
-        g.link(r2, gate);
-        g.link(gate, r3);
-        g.link(r3, r4);
-        g.link(r4, goal);
-
-        /*
-        trace('Before replace');
-        g.print_walk(start);
-        var r = g.replace(get_graph_pattern(), get_graph_replacement());
-        trace('Did replace: $r');
-
-        trace('After 1st replace');
-        g.print_walk(start);
-
-        r = g.replace(get_graph_pattern(), get_graph_replacement2());
-        trace('Did replace: $r');
-
-        trace('After 2nd replace');
-        g.print_walk(start);
-        */
-
-        var pattern_replacements :Array<{ pattern :Graph<String>, replacements :Array<Graph<String>> }> = [];
-        pattern_replacements.push({ pattern: get_graph_pattern(), replacements: [get_graph_expansion(), get_graph_shortcut(), get_graph_replacement(), get_graph_replacement2()]});
-        pattern_replacements.push({ pattern: get_graph_pattern_lock(), replacements: [get_graph_replace_lock()]});
-
-        var replacements = 0;
-        var max_replacements = 10;
-        while (replacements < max_replacements) {
-            var replacements_this_pass = 0;
-            core.tools.ArrayTools.shuffle(pattern_replacements);
-            for (pair in pattern_replacements) {
-                core.tools.ArrayTools.shuffle(pair.replacements);
-                for (replacement in pair.replacements) {
-                    if (g.replace(pair.pattern, replacement)) {
-                        trace('Made a replacement with:');
-                        trace('Pattern:'); pair.pattern.print();
-                        trace('Replacement:'); replacement.print();
-                        replacements++;
-                        replacements_this_pass++;
-                    }
-                    if (replacements >= max_replacements) break;
-                }
-                if (replacements >= max_replacements) break;
-            }
-            if (replacements_this_pass == 0) {
-                trace('No more available patterns found!');
-                break;
-            }
-        }
-        trace('Made $replacements replacements!');
-
-        return g;
-    }
-
-    // start
-    // room
-    // -> room_locked -> gate -> dataserver -> goal
-    // room -> room_key
-
-    static function get_graph_pattern() {
-        var g = new Graph();
-        var A = g.create_node('room', 1);
-        var B = g.create_node('room', 2);
-        g.link(A, B);
-        return g;
-    }
-
-    static function get_graph_replacement() {
-        var g = new Graph();
-        var A = g.create_node('room', 1);
-        var B = g.create_node('room_locked', 2);
-        var b = g.create_node('room_key', 3);
-        g.link(A, B);
-        g.link(A, b);
-        return g;
-    }
-
-    static function get_graph_replacement2() {
-        var g = new Graph();
-        var A = g.create_node('gate', 1);
-        var B = g.create_node('datastore', 2);
-        g.link(A, B);
-        return g;
-    }
-
-    static function get_graph_expansion() {
-        var g = new Graph();
-        var A = g.create_node('room', 1);
-        var B = g.create_node('room', 2);
-        var C = g.create_node('room', 3);
-        g.link(A, B);
-        g.link(B, C);
-        return g;
-    }
-
-    static function get_graph_shortcut() {
-        var g = new Graph();
-        var A = g.create_node('room', 1);
-        var B = g.create_node('room', 3);
-        var C = g.create_node('room', 4);
-        var D = g.create_node('room', 5);
-        var E = g.create_node('room', 2);
-        g.link(A, B);
-        g.link(B, C);
-        g.link(C, D);
-        g.link(D, E);
-        g.link(E, A);
-        return g;
-    }
-
-    static function get_graph_pattern_lock() {
-        var g = new Graph();
-        var A = g.create_node('room_key', 1);
-        var B = g.create_node('room_locked', 2);
-        g.link(A, B);
-        return g;
-    }
-
-    static function get_graph_replace_lock() {
-        var g = new Graph();
-        var A = g.create_node('room', 1);
-        var B = g.create_node('room_key', 3);
-        var C = g.create_node('room_locked', 2);
-        g.link(A, B);
-        g.link(A, C);
         return g;
     }
 }
