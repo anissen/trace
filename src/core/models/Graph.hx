@@ -127,6 +127,7 @@ class Graph<T> {
         core.tools.ArrayTools.shuffle(first_nodes);
         for (n in first_nodes) {
             if (try_mark_pattern(n, pattern)) return true;
+            for (n in pattern.nodes) n.id = null; // mark pattern failed, reset marks
         }
         return false;
     }
