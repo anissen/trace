@@ -100,7 +100,7 @@ class WorldState extends State {
 
         nodes = new Map();
         node_entities = new Map();
-        random = new luxe.utils.Random(42);
+        random = new luxe.utils.Random(Math.random() /* TODO: Use seed */);
 
         enemy_icon = null;
 
