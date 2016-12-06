@@ -126,6 +126,22 @@ class Main extends luxe.Game {
     //     Luxe.camera.viewport = new luxe.Rectangle(0, 0, e.event.x, e.event.y);
     // }
 
+    override function onwindowresized(event :luxe.Screen.WindowEvent) {
+        trace('resized: $event');
+        // Luxe.camera.viewport = new luxe.Rectangle(0, 0, event.x, event.y);
+        // if (postprocess != null) postprocess.shader.set_vector2('resolution', Luxe.screen.size.clone());
+    }
+
+    override function onwindowsized(event :luxe.Screen.WindowEvent) {
+        trace('sized: $event');
+        // Luxe.camera.size = new luxe.Vector(event.x, event.y);
+        // Luxe.camera.viewport = new luxe.Rectangle(0, 0, event.x, event.y);
+        // if (postprocess != null) {
+        //     postprocess.resize();
+        //     postprocess.shader.set_vector2('resolution', new luxe.Vector(event.x, event.y));
+        // }
+    }
+
     override function onprerender() {
         if (postprocess != null) postprocess.prerender();
     }

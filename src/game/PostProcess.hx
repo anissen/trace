@@ -23,12 +23,20 @@ class PostProcess {
             no_scene: true,
             centered: false,
             pos: new Vector(0,0),
-            size: Luxe.screen.size,
+            size: Luxe.screen.size.clone(),
             texture: output,
             shader: shader, //Luxe.renderer.shaders.textured.shader,
             batcher: batch
         });
     }
+
+    // public function resize() {
+    //     // output = new RenderTexture({ id: 'render-to-texture', width: Luxe.screen.w, height: Luxe.screen.h });
+    //     output.width = output.width_actual = Luxe.screen.w;
+    //     output.height = output.height_actual = Luxe.screen.h;
+    //     view.size = Luxe.screen.size.clone();
+    //     // view.texture = output;
+    // }
 
     public function toggle() {
         view.shader = (view.shader == shader ? Luxe.renderer.shaders.textured.shader : shader);
