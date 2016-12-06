@@ -312,6 +312,8 @@ class WorldState extends State {
     override function onrender() {
         overlay_filter.pos = Luxe.camera.view.center.clone();
 
+        var current_linked_nodes = (current == null ? [] : graph.get_edges_for_node(current));
+
         for (r in graph.get_references()) {
             if (!node_entities.exists(r.a) || !node_entities.exists(r.b)) continue;
 
@@ -324,11 +326,13 @@ class WorldState extends State {
                     depth: 5
                 });
             } else if (r.type != Key) {
+                var is_linked_to = ((r.a == current && current_linked_nodes.indexOf(r.b) != -1) || (r.b == current && current_linked_nodes.indexOf(r.a) != -1));
+
                 Luxe.draw.line({
                     p0: node_entities[r.a].pos,
                     p1: node_entities[r.b].pos,
                     immediate: true,
-                    color: new Color(1, 1, 1, (is_locked(r.b) ? 0.1 : 1)),
+                    color: new Color(1, 1, 1, (is_locked(r.b) ? 0.05 : (is_linked_to ? 1 : 0.3))),
                     depth: 5
                 });
             }
