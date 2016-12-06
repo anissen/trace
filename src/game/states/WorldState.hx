@@ -250,7 +250,7 @@ class WorldState extends State {
         //  s.setIntegrator( ParticleSystem.MODIFIED_EULER );
 
          // Now try this to see make it more damped, but stable.
-        //  s.setDrag( 0.2 );
+         s.setDrag(0.5);
 
          initialize();
     }
@@ -601,6 +601,17 @@ class WorldState extends State {
         }
 
         current = node;
+
+        // ensure linked nodes are cleared of others
+        var current_particle = nodes[current];
+        for (spring in s.springs) {
+            if (spring.getOneEnd() == current_particle || spring.getTheOtherEnd() == current_particle) {
+                spring.setRestLength(EDGE_LENGTH);
+            } else {
+                spring.setRestLength(EDGE_LENGTH * 1.5);
+            }
+        }
+
         if (!nodes.exists(node)) {
             nodes[node] = add_node();
         }
