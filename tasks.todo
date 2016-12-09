@@ -1,7 +1,6 @@
 
 # To-do
 
-[ ] Proper levels
 [ ] Modal box for showing info or tutorials
 [ ] Tutorial
 [ ] Menu
@@ -9,11 +8,8 @@
 [ ] Better arrows (image + UV translation)
 [ ] One-way edges
 [ ] High score
-[ ] Stop enemy when game is won
 [ ] Game over screen
-[ ] Return to game over screen after win/lose
 [ ] Clean up unused assets
-
 
 Misc:
 [ ] Make a player abstraction
