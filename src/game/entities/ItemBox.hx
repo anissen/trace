@@ -20,6 +20,7 @@ class ItemBox extends Entity {
     public var item :String;
     public var text :Text;
     public var index :Int;
+    public var inverted :Bool;
 
     var pos_vector :Vector;
     var bg :Visual;
@@ -29,6 +30,7 @@ class ItemBox extends Entity {
         super();
         this.item = options.item;
         this.index = options.index;
+        this.inverted = options.inverted;
 
         pos_vector = switch (options.index) {
             case 0: new Vector(-105, -120);

@@ -70,6 +70,8 @@ class WorldState extends State {
     var random :luxe.utils.Random;
 
     var countdownFunctions :Array<{ time :Float, func :Void->Void }>;
+    var tutorial_node :game.entities.Node;
+    var start_node :GraphNode;
 
     #if with_shader
     var circuits_sprite :Sprite;
@@ -260,6 +262,7 @@ class WorldState extends State {
         random = new luxe.utils.Random(Math.random() /* TODO: Use seed */);
 
         countdownFunctions = [];
+        tutorial_node = null;
 
         enemy_icon = null;
 
@@ -310,7 +313,7 @@ class WorldState extends State {
         item_boxes = [];
         capture_item_boxes = [];
 
-        var start_node = graph.get_node('start');
+        start_node = graph.get_node('start');
         select_node(start_node);
 
         countdown = 60;
@@ -648,7 +651,7 @@ class WorldState extends State {
         if (current.value == 'goal' && !got_data) {
             got_data = true;
             Notification.Toast({
-                text: 'DATA ACQUIRED\nRETURN TO EXTRACTION POINT',
+                text: 'DATA ACQUIRED\nRETURN TO EXTRACTION NODE',
                 color: new Color(1, 0, 1),
                 pos: new Vector(current_entity.pos.x, current_entity.pos.y - 120),
                 duration: 10
@@ -660,7 +663,7 @@ class WorldState extends State {
             game_over = true;
             countdownFunctions = [];
             delayed_function(function() {
-                Main.states.set(MenuState.StateId, 'DATA EXTRACTED\nExtract more?');
+                Main.states.set(MenuState.StateId, 'DATA EXTRACTED\nSUCCESSFULLY!\n\nRETRY?');
             }, 2);
         } else if (current.value == 'datastore') {
             if (captured_nodes.indexOf(current) == -1) { // new datastore
@@ -710,19 +713,23 @@ class WorldState extends State {
             if (l.index == index) index++;
         }
         var item :ItemBox = null;
+        var description = 'N/A';
         if (list == item_boxes) {
             item = switch (random.int(3)) {
-                case 0: new ItemBox({
+                case 0: description = 'increases the time for the\nTRACE to capture the node';
+                new ItemBox({
                     item: 'Enforce',
                     texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
                     index: index
                 });
-                case 1: new ItemBox({
+                case 1: description = 'lures the TRACE to capture the node';
+                new ItemBox({
                     item: 'Honeypot',
                     texture: Luxe.resources.texture('assets/images/honeypot.png'),
                     index: index
                 });
-                case 2: new ItemBox({
+                case 2: description = 'takes the node completely\noffline for 20 seconds';
+                new ItemBox({
                     item: 'Nuke',
                     texture: Luxe.resources.texture('assets/images/mushroom-cloud.png'),
                     index: index
@@ -731,13 +738,15 @@ class WorldState extends State {
             }
         } else {
             item = switch (random.int(2)) {
-                case 0: new ItemBox({
+                case 0: description = 'reveals the network of the node';
+                new ItemBox({
                     item: 'Scan',
                     texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
                     inverted: true,
                     index: index
                 });
-                case 1: new ItemBox({
+                case 1: description = 'instantly captures the node\nand without detection';
+                new ItemBox({
                     item: 'Trojan',
                     texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
                     inverted: true,
@@ -749,14 +758,44 @@ class WorldState extends State {
 
         play_sound('pickup.wav');
 
+        var item_name = item.item.toUpperCase();
         Notification.Toast({
-            text: '${item.item.toUpperCase()} ACQUIRED',
+            text: '$item_name ACQUIRED',
             color: new Color(1, 0, 1),
             pos: new Vector(pos.x, pos.y - 120),
             duration: 8
         });
 
+        tutorial(item.item, node_entities[current], ['$item_name ABILITY ACQUIRED', '$item_name can be used ' + (item.inverted ? 'when capturing a node' : 'on the active node'), '$item_name $description', '$item_name is used by pressing ${index+1}']).then(function() {
+            Notification.Toast({
+                text: 'GOT IT?!',
+                color: new Color(1, 0, 1),
+                pos: new Vector(pos.x, pos.y - 120),
+                duration: 8
+            });
+        });
+
         list.push(item);
+    }
+
+    function tutorial(id :String, node :game.entities.Node, texts :Array<String>) {
+        // if (Luxe.io.string_load(id) != '') return Promise.resolve();
+        // Luxe.io.string_save(id, 'done');
+
+        tutorial_node = node;
+        luxe.tween.Actuate.tween(Luxe, 0.3, { timescale: 0.1 });
+        var infobox = new game.entities.InfoBox({
+            depth: 1000,
+            duration: texts.length * 4,
+            scene: Luxe.scene,
+            texts: texts
+        });
+        infobox.get_promise().then(function() {
+            tutorial_node = null;
+            luxe.tween.Actuate.tween(Luxe, 0.1, { timescale: 1.0 });
+        });
+        node.add(infobox);
+        return infobox.get_promise();
     }
 
     function detected(node :GraphNode) {
@@ -808,8 +847,7 @@ class WorldState extends State {
 
         s.tick(dt * 10); // Hack to multiply dt
 
-        var current_entity = node_entities[current];
-        Luxe.camera.focus(current_entity.pos, 0.1);
+        Luxe.camera.focus((tutorial_node != null ? tutorial_node.pos : node_entities[current].pos), 0.1);
 
         angle += dt;
 
@@ -900,7 +938,7 @@ class WorldState extends State {
                     game_over = true;
                     countdownFunctions = [];
                     delayed_function(function() {
-                        Main.states.set(MenuState.StateId, 'TRACED!\nDESTROY ALL HARDWARE\nTry again?');
+                        Main.states.set(MenuState.StateId, 'YOU GOT CAUGHT\n\nRETRY?');
                     }, 2);
                     return;
                 }

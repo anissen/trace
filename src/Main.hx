@@ -41,6 +41,7 @@ class Main extends luxe.Game {
         config.preload.textures.push({ id: 'assets/images/mushroom-cloud.png' });
 
         config.preload.textures.push({ id: 'assets/images/overlay_filter.png' });
+        config.preload.textures.push({ id: 'assets/images/info_box.png' });
 
         config.preload.shaders.push({ id: 'postprocess', frag_id: 'assets/shaders/fullretard.frag', vert_id: 'default' });
         #if with_shader
