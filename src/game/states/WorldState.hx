@@ -23,6 +23,9 @@ typedef GraphNode = core.models.Graph.Node<String>;
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
 
+    var paused :Bool;
+    var game_over :Bool;
+
     var overlay_batcher :phoenix.Batcher;
     var overlay_filter :Sprite;
 
@@ -66,6 +69,8 @@ class WorldState extends State {
 
     var random :luxe.utils.Random;
 
+    var countdownFunctions :Array<{ time :Float, func :Void->Void }>;
+
     #if with_shader
     var circuits_sprite :Sprite;
     var circuits_shader :phoenix.Shader;
@@ -80,7 +85,7 @@ class WorldState extends State {
     }
 
     function add_linked_nodes(n :GraphNode) {
-        var delay = 0;
+        var delay = 0.0;
         for (l in graph.get_edges_for_node(n)) {
             if (nodes.exists(l)) {
                 var link_node = true;
@@ -95,15 +100,19 @@ class WorldState extends State {
                 }
                 if (link_node) add_edge(p, q);
             } else {
-                haxe.Timer.delay(function() {
+                delayed_function(function() {
                     var p = add_node();
                     node_entities[l] = create_node_entity(p, l);
                     nodes[l] = p;
                     add_edge(p, nodes[n]);
                 }, delay);
-                delay += 500;
+                delay += 0.5;
             }
         }
+    }
+
+    function delayed_function(func :Void->Void, delay :Float) {
+        countdownFunctions.push({ time: delay, func: func });
     }
 
     function create_node_entity(p :Particle, n :GraphNode) {
@@ -244,9 +253,13 @@ class WorldState extends State {
         });
         #end
 
+        game_over = false;
+
         nodes = new Map();
         node_entities = new Map();
         random = new luxe.utils.Random(Math.random() /* TODO: Use seed */);
+
+        countdownFunctions = [];
 
         enemy_icon = null;
 
@@ -302,14 +315,12 @@ class WorldState extends State {
 
         countdown = 60;
 
-        haxe.Timer.delay(function() {
+        delayed_function(function() {
             detected(start_node);
-        }, Math.floor(countdown * 1000));
-    }
+        }, countdown);
 
-    // override function onwindowresized(event :luxe.Screen.WindowEvent) {
-    //
-    // }
+        paused = false;
+    }
 
     override function onleave(_) {
         Luxe.scene.empty();
@@ -521,24 +532,24 @@ class WorldState extends State {
                         enemy_capture_node = null;
                     }
                     var current_copy = current; // to ensure a local copy of current for the delayed function
-                    haxe.Timer.delay(function() {
+                    delayed_function(function() {
                         nukeSprite.destroy();
                         entity.set_capture_text('UP: 3s');
-                    }, 27000);
-                    haxe.Timer.delay(function() {
+                    }, 17);
+                    delayed_function(function() {
                         entity.set_capture_text('UP: 2s');
-                    }, 28000);
-                    haxe.Timer.delay(function() {
+                    }, 18);
+                    delayed_function(function() {
                         entity.set_capture_text('UP: 1s');
-                    }, 29000);
-                    haxe.Timer.delay(function() {
+                    }, 19);
+                    delayed_function(function() {
                         entity.nuked(false);
                         nuked.remove(current_copy);
                         if (enemy_in_game) {
                             enemy_capture_node = current_copy;
                             enemy_capture_time = get_enemy_capture_time();
                         }
-                    }, 30000);
+                    }, 20);
                 }
         }
     }
@@ -642,6 +653,11 @@ class WorldState extends State {
             trace('You won!');
             play_sound('game_over.wav');
             Luxe.renderer.clear_color.tween(1, { g: 1 });
+            game_over = true;
+            countdownFunctions = [];
+            delayed_function(function() {
+                Main.states.set(MenuState.StateId, 'DATA EXTRACTED\nExtract more?');
+            }, 2);
         } else if (current.value == 'datastore') {
             if (captured_nodes.indexOf(current) == -1) { // new datastore
                 gain_random_item(current_entity.pos);
@@ -774,6 +790,18 @@ class WorldState extends State {
 
     var angle :Float = 0;
     override function update(dt :Float) {
+        if (paused) return;
+
+        for (c in countdownFunctions) {
+            c.time -= dt;
+            if (c.time <= 0) {
+                countdownFunctions.remove(c);
+                c.func();
+            }
+        }
+
+        if (game_over) return;
+
         s.tick(dt * 10); // Hack to multiply dt
 
         var current_entity = node_entities[current];
@@ -865,6 +893,11 @@ class WorldState extends State {
                     luxe.tween.Actuate.tween(Main, 0.3, { shift: 0.2, bloom: 0.6 });
                     enemy_capture_node = null;
                     capture_node = null;
+                    game_over = true;
+                    countdownFunctions = [];
+                    delayed_function(function() {
+                        Main.states.set(MenuState.StateId, 'TRACED!\nDESTROY ALL HARDWARE\nTry again?');
+                    }, 2);
                     return;
                 }
                 enemy_captured_nodes.push(enemy_capture_node);
