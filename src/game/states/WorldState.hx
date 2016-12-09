@@ -618,7 +618,8 @@ class WorldState extends State {
         if (nuked.indexOf(node) > -1) return; // cannot select nuked node
 
         if (current != null && node_entities.exists(current)) {
-            node_entities[current].color.rgb(0x2ECC40); // .rgb(0x44FF44);
+            var entity = node_entities[current];
+            entity.color.rgb(0x2ECC40); // .rgb(0x44FF44);
         }
 
         current = node;
@@ -654,7 +655,6 @@ class WorldState extends State {
             });
             play_sound('pickup.wav');
         } else if (current.value == 'start' && got_data) {
-            trace('You won!');
             play_sound('game_over.wav');
             Luxe.renderer.clear_color.tween(1, { g: 1 });
             game_over = true;
@@ -964,4 +964,15 @@ class WorldState extends State {
             return 3;
         }
     }
+
+    // function show_modal(text :String, callback :Void->Void) {
+    //     paused = true;
+    //     Main.states.enable(InfoState.StateId, {
+    //         text: text,
+    //         callback: function() {
+    //             paused = false;
+    //             callback();
+    //         }
+    //     });
+    // }
 }

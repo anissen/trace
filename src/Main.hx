@@ -67,16 +67,16 @@ class Main extends luxe.Game {
     override function ready() {
         // Optional, set a consistent scale camera mode for the entire game
 		// this is a luxe's wip feature
-		Luxe.camera.size = new luxe.Vector(960, 640);
+		// Luxe.camera.size = new luxe.Vector(960, 640);
 		// Luxe.camera.size_mode = luxe.Camera.SizeMode.cover;
-		Luxe.camera.center = new luxe.Vector();
+
 
         luxe.tween.Actuate.defaultEase = luxe.tween.easing.Quad.easeInOut;
 
         Luxe.renderer.batcher.on(prerender, function(_) { Luxe.renderer.state.lineWidth(4); });
         Luxe.renderer.batcher.on(postrender, function(_) { Luxe.renderer.state.lineWidth(1); });
 
-        Luxe.renderer.clear_color.set(25/255, 35/255, 55/255);
+        Luxe.renderer.clear_color.set(0, 0.1, 0.1);
 
         var shader = Luxe.resources.shader('postprocess');
         shader.set_vector2('resolution', Luxe.screen.size);
@@ -159,11 +159,10 @@ class Main extends luxe.Game {
     }
 
     override function onkeyup(e :KeyEvent) {
-        /*
         if (e.keycode == Key.enter && e.mod.alt) {
             fullscreen = !fullscreen;
             Luxe.snow.runtime.window_fullscreen(fullscreen, true); // true for true-fullscreen
-        } else if (e.keycode == Key.key_s) {
+        } /* else if (e.keycode == Key.key_s) {
             // save state
             Luxe.io.string_save('save', 'blah test');
         } else if (e.keycode == Key.key_l) {
