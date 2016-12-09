@@ -480,7 +480,11 @@ class WorldState extends State {
             case 'Scan':
                 if (capture_node != null) add_linked_nodes(capture_node);
             case 'Trojan':
-                if (capture_node != null) select_node(capture_node);
+                if (capture_node != null) {
+                    // ensure old node text is cleared when using trojan
+                    node_entities[capture_node].set_capture_text('');
+                    select_node(capture_node);
+                }
                 capture_node = null;
             // node
             case 'Enforce':
