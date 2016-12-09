@@ -549,7 +549,7 @@ class WorldState extends State {
                     delayed_function(function() {
                         entity.nuked(false);
                         nuked.remove(current_copy);
-                        if (enemy_in_game) {
+                        if (!enemy_in_game && enemy_capture_node == null) {
                             enemy_capture_node = current_copy;
                             enemy_capture_time = get_enemy_capture_time();
                         }
