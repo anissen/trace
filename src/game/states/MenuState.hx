@@ -18,9 +18,13 @@ class MenuState extends State {
     }
 
     override function onenter(data :Dynamic) {
+        Luxe.camera.center = new luxe.Vector();
+        Main.bloom = 0.4;
+        Main.shift = 0.0;
+        Luxe.renderer.clear_color.tween(1, { r: 25/255, g: 35/255, b: 55/255 });
         new Text({
             pos: new Vector(),
-            text: 'trace',
+            text: (data != null ? data : 'trace'),
             point_size: 72,
             align: center,
             align_vertical: center
