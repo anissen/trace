@@ -116,6 +116,12 @@ class InfoBox extends Component {
             });
     }
 
+    override function onkeyup(e :luxe.Input.KeyEvent) {
+        if (e.keycode == luxe.Input.Key.enter) {
+            // TODO: Show next tutorial
+        }
+    }
+
     override function onremoved() {
         speech_text.text = '';
         Actuate.tween(speech_bubble.color, 0.4, { a: 0 }, true).ease(luxe.tween.easing.Linear.easeNone);
@@ -129,7 +135,7 @@ class InfoBox extends Component {
     }
 
     function get_corrected_pos(v :Vector) :Vector {
-        return Vector.Add(v, new Vector(-speech_bubble.width / 2, -speech_bubble.height));
+        return Vector.Add(v, new Vector(-speech_bubble.width / 2, -speech_bubble.height - 30));
     }
 
     function sizechange() {

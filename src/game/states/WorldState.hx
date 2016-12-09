@@ -70,7 +70,7 @@ class WorldState extends State {
     var random :luxe.utils.Random;
 
     var countdownFunctions :Array<{ time :Float, func :Void->Void }>;
-    var tutorial_node :game.entities.Node;
+    var tutorial_entity :luxe.Entity;
     var start_node :GraphNode;
 
     #if with_shader
@@ -262,7 +262,7 @@ class WorldState extends State {
         random = new luxe.utils.Random(Math.random() /* TODO: Use seed */);
 
         countdownFunctions = [];
-        tutorial_node = null;
+        tutorial_entity = null;
 
         enemy_icon = null;
 
@@ -656,6 +656,9 @@ class WorldState extends State {
                 pos: new Vector(current_entity.pos.x, current_entity.pos.y - 120),
                 duration: 10
             });
+            tutorial('data acquired', current_entity, ['DATA ACQUIRED']).then(function() {
+                tutorial('data acquired 2', node_entities[start_node], ['RETURN TO EXTRACTION NODE']);
+            });
             play_sound('pickup.wav');
         } else if (current.value == 'start' && got_data) {
             play_sound('game_over.wav');
@@ -716,19 +719,19 @@ class WorldState extends State {
         var description = 'N/A';
         if (list == item_boxes) {
             item = switch (random.int(3)) {
-                case 0: description = 'increases the time for the\nTRACE to capture the node';
+                case 0: description = 'increase the time it takes the TRACE\nto capture the node';
                 new ItemBox({
                     item: 'Enforce',
                     texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
                     index: index
                 });
-                case 1: description = 'lures the TRACE to capture the node';
+                case 1: description = 'lure the TRACE to capture the node';
                 new ItemBox({
                     item: 'Honeypot',
                     texture: Luxe.resources.texture('assets/images/honeypot.png'),
                     index: index
                 });
-                case 2: description = 'takes the node completely\noffline for 20 seconds';
+                case 2: description = 'take the node completely offline for\n20 seconds';
                 new ItemBox({
                     item: 'Nuke',
                     texture: Luxe.resources.texture('assets/images/mushroom-cloud.png'),
@@ -738,14 +741,14 @@ class WorldState extends State {
             }
         } else {
             item = switch (random.int(2)) {
-                case 0: description = 'reveals the network of the node';
+                case 0: description = 'reveal the network of the node';
                 new ItemBox({
                     item: 'Scan',
                     texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
                     inverted: true,
                     index: index
                 });
-                case 1: description = 'instantly captures the node\nand without detection';
+                case 1: description = 'instantly capture the node without detection';
                 new ItemBox({
                     item: 'Trojan',
                     texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
@@ -766,23 +769,18 @@ class WorldState extends State {
             duration: 8
         });
 
-        tutorial(item.item, node_entities[current], ['$item_name ABILITY ACQUIRED', '$item_name can be used ' + (item.inverted ? 'when capturing a node' : 'on the active node'), '$item_name $description', '$item_name is used by pressing ${index+1}']).then(function() {
-            Notification.Toast({
-                text: 'GOT IT?!',
-                color: new Color(1, 0, 1),
-                pos: new Vector(pos.x, pos.y - 120),
-                duration: 8
-            });
+        tutorial(item.item, node_entities[current], ['$item_name ABILITY ACQUIRED', item_name + ' can be used ' + (item.inverted ? 'when capturing a node to\n' : 'on the active node to\n') + description]).then(function() {
+            tutorial('any_item_usage', node_entities[current], ['Items are used by pressing their\ncorresponding key (here ${index+1})']);
         });
 
         list.push(item);
     }
 
-    function tutorial(id :String, node :game.entities.Node, texts :Array<String>) {
+    function tutorial(id :String, entity :luxe.Entity, texts :Array<String>) {
         // if (Luxe.io.string_load(id) != '') return Promise.resolve();
         // Luxe.io.string_save(id, 'done');
 
-        tutorial_node = node;
+        tutorial_entity = entity;
         luxe.tween.Actuate.tween(Luxe, 0.3, { timescale: 0.1 });
         var infobox = new game.entities.InfoBox({
             depth: 1000,
@@ -791,10 +789,10 @@ class WorldState extends State {
             texts: texts
         });
         infobox.get_promise().then(function() {
-            tutorial_node = null;
+            tutorial_entity = null;
             luxe.tween.Actuate.tween(Luxe, 0.1, { timescale: 1.0 });
         });
-        node.add(infobox);
+        entity.add(infobox);
         return infobox.get_promise();
     }
 
@@ -847,7 +845,7 @@ class WorldState extends State {
 
         s.tick(dt * 10); // Hack to multiply dt
 
-        Luxe.camera.focus((tutorial_node != null ? tutorial_node.pos : node_entities[current].pos), 0.1);
+        Luxe.camera.focus((tutorial_entity != null ? tutorial_entity.pos : node_entities[current].pos), 0.1);
 
         angle += dt;
 
