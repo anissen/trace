@@ -667,7 +667,7 @@ class WorldState extends State {
             countdownFunctions = [];
             delayed_function(function() {
                 Main.states.set(MenuState.StateId, 'DATA EXTRACTED\nSUCCESSFULLY!\n\nRETRY?');
-            }, 2);
+            }, 3);
         } else if (current.value == 'datastore') {
             if (captured_nodes.indexOf(current) == -1) { // new datastore
                 gain_random_item(current_entity.pos);
@@ -937,7 +937,7 @@ class WorldState extends State {
                     countdownFunctions = [];
                     delayed_function(function() {
                         Main.states.set(MenuState.StateId, 'YOU GOT CAUGHT\n\nRETRY?');
-                    }, 2);
+                    }, 3);
                     return;
                 }
                 enemy_captured_nodes.push(enemy_capture_node);
