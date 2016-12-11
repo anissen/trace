@@ -2,3 +2,4 @@ bin
 media
 
 *.DS_Store
+firebase-config.json

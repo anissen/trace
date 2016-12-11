@@ -117,6 +117,12 @@ class Main extends luxe.Game {
         // DC.init(30, 'DOWN', theme);
         // DC.registerFunction(function() { postprocess.toggle(); }, "toggle_shader");
         // DC.registerObject(Main, "Main");
+
+        var config = core.tools.JSONImporter.import_json('firebase-config.json');
+        var app = firebase.Firebase.initializeApp(config);
+        app.database().ref("test").set("wowser").then(function(e :String) {
+          trace("Set value!");
+        });
     }
 
     // Scale camera's viewport accordingly when game is scaled, common and suitable for most games
