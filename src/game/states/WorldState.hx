@@ -83,7 +83,21 @@ class WorldState extends State {
     }
 
     override function init() {
+        overlay_batcher = Luxe.renderer.create_batcher({
+            name: 'overlay',
+            layer: 1000
+        });
+        overlay_batcher.on(prerender, function(b :Batcher) {
+            Luxe.renderer.blend_mode(BlendMode.src_alpha, BlendMode.one);
+        });
+        overlay_batcher.on(postrender, function(b :Batcher) {
+            Luxe.renderer.blend_mode();
+        });
 
+        ui_batcher = Luxe.renderer.create_batcher({
+            name: 'ui',
+            layer: 500
+        });
     }
 
     function add_linked_nodes(n :GraphNode) {
@@ -223,26 +237,15 @@ class WorldState extends State {
         Luxe.camera.zoom = 0.1;
         luxe.tween.Actuate.tween(Luxe.camera, 0.5, { zoom: 1 });
 
-        overlay_batcher = Luxe.renderer.create_batcher({
-            name: 'overlay',
-            layer: 1000
-        });
-        overlay_batcher.on(prerender, function(b :Batcher) {
-            Luxe.renderer.blend_mode(BlendMode.src_alpha, BlendMode.one);
-        });
-        overlay_batcher.on(postrender, function(b :Batcher) {
-            Luxe.renderer.blend_mode();
-        });
-
         overlay_filter = new Sprite({
-            centered: true,
-            pos: Luxe.camera.pos.clone(),
+            centered: false,
+            pos: new Vector(0, 0),
             texture: Luxe.resources.texture('assets/images/overlay_filter.png'),
-            size: Vector.Multiply(Luxe.screen.size.clone(), 1.2),
+            size: Luxe.screen.size.clone(),
             batcher: overlay_batcher,
             depth: 1000
         });
-        overlay_filter.color.a = 0.6;
+        overlay_filter.color.a = 0.8;
 
         #if with_shader
         circuits_shader = Luxe.resources.shader('circuits');
@@ -283,11 +286,6 @@ class WorldState extends State {
 
         honeypots = [];
         nuked = [];
-
-        ui_batcher = Luxe.renderer.create_batcher({
-            name: 'ui',
-            layer: 500
-        });
 
         countdownText = new Text({
             text: '--:--:--',
@@ -330,8 +328,6 @@ class WorldState extends State {
     }
 
     override function onrender() {
-        overlay_filter.pos = Luxe.camera.view.center.clone();
-
         var current_linked_nodes = (current == null ? [] : graph.get_edges_for_node(current));
 
         for (r in graph.get_references()) {
