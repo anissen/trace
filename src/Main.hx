@@ -5,7 +5,7 @@ import luxe.Input.Key;
 import game.PostProcess;
 import game.states.*;
 
-import pgr.dconsole.DC;
+// import pgr.dconsole.DC;
 
 class Main extends luxe.Game {
     static public var states :States;
@@ -94,32 +94,29 @@ class Main extends luxe.Game {
         var music = Luxe.resources.audio('assets/music/tech_industry.ogg');
         Luxe.audio.loop(music.source, 0.8);
 
-        var theme :pgr.dconsole.DCThemes.Theme = {
-    		CON_C 		: 0x353535,
-    		CON_TXT_C 	: 0x00FF00,
-    		CON_A		: .7,
-    		CON_TXT_A	: 1,
+        // var theme :pgr.dconsole.DCThemes.Theme = {
+    	// 	CON_C 		: 0x353535,
+    	// 	CON_TXT_C 	: 0x00FF00,
+    	// 	CON_A		: .7,
+    	// 	CON_TXT_A	: 1,
+        //
+    	// 	PRM_C		: 0x454545,
+    	// 	PRM_TXT_C	: 0xFFFF00,
+        //
+    	// 	MON_C		: 0x000000,
+    	// 	MON_TXT_C	: 0xFF00FF,
+    	// 	MON_A		: .7,
+    	// 	MON_TXT_A	: .7,
+        //
+    	// 	LOG_WAR	: 0xFFFF00, // Warning messages color;
+    	// 	LOG_ERR	: 0xFF0000, // Error message color;
+    	// 	LOG_INF	: 0x00FFFF, // Info messages color;
+    	// 	LOG_CON	: 0x00FF00, // Confirmation messages color;
+    	// }
 
-    		PRM_C		: 0x454545,
-    		PRM_TXT_C	: 0xFFFF00,
-
-    		MON_C		: 0x000000,
-    		MON_TXT_C	: 0xFF00FF,
-    		MON_A		: .7,
-    		MON_TXT_A	: .7,
-
-    		LOG_WAR	: 0xFFFF00, // Warning messages color;
-    		LOG_ERR	: 0xFF0000, // Error message color;
-    		LOG_INF	: 0x00FFFF, // Info messages color;
-    		LOG_CON	: 0x00FF00, // Confirmation messages color;
-    	}
-
-        DC.init(30, 'DOWN', theme);
-        // DC.log("This text will be logged.");
-        DC.registerFunction(function() { postprocess.toggle(); }, "toggle_shader");
-        DC.registerObject(Main, "Main");
-        // DC.registerObject(worldstate, "world");
-        // DC.registerClass(Math, "Math");
+        // DC.init(30, 'DOWN', theme);
+        // DC.registerFunction(function() { postprocess.toggle(); }, "toggle_shader");
+        // DC.registerObject(Main, "Main");
     }
 
     // Scale camera's viewport accordingly when game is scaled, common and suitable for most games
