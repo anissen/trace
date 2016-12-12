@@ -179,6 +179,8 @@ class WorldState extends State {
             entity.set_capture_text('?');
         }
 
+        // tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}']);
+
         return entity;
     }
 
@@ -321,6 +323,36 @@ class WorldState extends State {
         }, countdown);
 
         paused = false;
+
+        delayed_function(function() {
+            intro_tutorial();
+        }, 0.5);
+    }
+
+    function intro_tutorial() {
+        return tutorial('start-info', node_entities[start_node], ['Welcome to the hacking interface', 'Each node in the graph represents a\ncomputer in the comprimised network', 'Your goal is to find and extract data\nfrom the master datastore']);
+
+        // var last_promise = Promise.resolve();
+        // var linked_nodes = graph.get_edges_for_node(start_node);
+        // for (type in ['node', 'datastore' /* key, lock */]) {
+        //     var node = linked_nodes.find(function(n) {
+        //         return (n.value == type);
+        //     });
+        //     if (node == null || !node_entities.exists(node)) continue;
+        //     var entity = node_entities[node];
+        //     last_promise = last_promise.then(function() {
+        //         return tutorial('node-type-$type', entity, ['This node is of type ${type.toUpperCase()}']);
+        //     });
+        // }
+
+        /* Tutorial TODO:
+        - node types
+        - how to capture nodes
+        - items
+        - the TRACE
+        - detection
+        - the timer
+        */
     }
 
     override function onleave(_) {
@@ -646,14 +678,15 @@ class WorldState extends State {
 
         if (current.value == 'goal' && !got_data) {
             got_data = true;
-            Notification.Toast({
-                text: 'DATA ACQUIRED\nRETURN TO EXTRACTION NODE',
-                color: new Color(1, 0, 1),
-                pos: new Vector(current_entity.pos.x, current_entity.pos.y - 120),
-                duration: 10
-            });
             tutorial('data acquired', current_entity, ['DATA ACQUIRED']).then(function() {
-                tutorial('data acquired 2', node_entities[start_node], ['RETURN TO EXTRACTION NODE']);
+                tutorial('data acquired 2', node_entities[start_node], ['RETURN TO EXTRACTION NODE']).then(function() {
+                    Notification.Toast({
+                        text: 'DATA ACQUIRED\nRETURN TO EXTRACTION NODE',
+                        color: new Color(1, 0, 1),
+                        pos: new Vector(current_entity.pos.x, current_entity.pos.y - 120),
+                        duration: 10
+                    });
+                });
             });
             play_sound('pickup.wav');
         } else if (current.value == 'start' && got_data) {
@@ -758,15 +791,16 @@ class WorldState extends State {
         play_sound('pickup.wav');
 
         var item_name = item.item.toUpperCase();
-        Notification.Toast({
-            text: '$item_name ACQUIRED',
-            color: new Color(1, 0, 1),
-            pos: new Vector(pos.x, pos.y - 120),
-            duration: 8
-        });
 
         tutorial(item.item, node_entities[current], ['$item_name ABILITY ACQUIRED', item_name + ' can be used ' + (item.inverted ? 'when capturing a node to\n' : 'on the active node to\n') + description]).then(function() {
             tutorial('any_item_usage', node_entities[current], ['Items are used by pressing their\ncorresponding key (here ${index+1})']);
+        }).then(function() {
+            Notification.Toast({
+                text: '$item_name ACQUIRED',
+                color: new Color(1, 0, 1),
+                pos: new Vector(pos.x, pos.y - 120),
+                duration: 8
+            });
         });
 
         list.push(item);
@@ -776,20 +810,22 @@ class WorldState extends State {
         // if (Luxe.io.string_load(id) != '') return Promise.resolve();
         // Luxe.io.string_save(id, 'done');
 
-        tutorial_entity = entity;
-        luxe.tween.Actuate.tween(Luxe, 0.3, { timescale: 0.1 });
-        var infobox = new game.entities.InfoBox({
-            depth: 1000,
-            duration: texts.length * 4,
-            scene: Luxe.scene,
-            texts: texts
+        return new Promise(function(resolve, reject) {
+            tutorial_entity = entity;
+            luxe.tween.Actuate.tween(Luxe, 0.3, { timescale: 0.1 });
+            var infobox = new game.entities.InfoBox({
+                depth: 1000,
+                duration: texts.length * 4,
+                scene: Luxe.scene,
+                texts: texts
+            });
+            infobox.get_promise().then(function() {
+                tutorial_entity = null;
+                luxe.tween.Actuate.tween(Luxe, 0.1, { timescale: 1.0 });
+            });
+            entity.add(infobox);
+            return infobox.get_promise();
         });
-        infobox.get_promise().then(function() {
-            tutorial_entity = null;
-            luxe.tween.Actuate.tween(Luxe, 0.1, { timescale: 1.0 });
-        });
-        entity.add(infobox);
-        return infobox.get_promise();
     }
 
     function detected(node :GraphNode) {
@@ -807,10 +843,12 @@ class WorldState extends State {
             countdown = -1;
             detectionText = 'DETECTED!';
         }
-        Notification.Toast({
-            text: detectionText,
-            color: new Color(1, 0, 0),
-            pos: node_entities[node].pos
+        tutorial('detected', node_entities[enemy_current], [detectionText, 'Evade the TRACE at all costs!']).then(function() {
+            Notification.Toast({
+                text: detectionText,
+                color: new Color(1, 0, 0),
+                pos: node_entities[node].pos
+            });
         });
 
         play_sound('alarm.wav');

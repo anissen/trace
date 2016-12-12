@@ -29,9 +29,10 @@ class InfoBox extends Component {
     var duration :Null<Float>;
     var promise :Promise;
     var promise_resolve :Void->Void;
+    // var text_countdown :Float;
 
     public function new(_options :InfoBoxOptions) {
-        super({ name: 'InfoBox' });
+        super({ name: 'InfoBox' + Luxe.utils.uniqueid() });
 
         speech_bubble = new NineSlice({
             name_unique: true,
@@ -66,6 +67,7 @@ class InfoBox extends Component {
 
         texts = _options.texts;
         duration = _options.duration;
+        // text_countdown = _options.duration / _options.texts;
         promise = new Promise(function(resolve, reject) {
             promise_resolve = resolve;
         });
@@ -87,15 +89,7 @@ class InfoBox extends Component {
 
         speech_bubble.visible = true;
 
-        for (i in 0 ... texts.length) {
-            Luxe.timer.schedule(i * (duration / texts.length), function() {
-                show_text(texts[i]);
-            });
-        }
-
-        if (duration != null) {
-            Luxe.timer.schedule(duration, this.remove.bind(this.name));
-        }
+        show_next_text();
     }
 
     function show_text(text :String) {
@@ -118,8 +112,17 @@ class InfoBox extends Component {
 
     override function onkeyup(e :luxe.Input.KeyEvent) {
         if (e.keycode == luxe.Input.Key.enter) {
-            // TODO: Show next tutorial
+            show_next_text();
         }
+    }
+
+    function show_next_text() {
+        if (texts.length == 0) {
+            remove(name);
+            return;
+        }
+        var text = texts.shift();
+        show_text(text);
     }
 
     override function onremoved() {
