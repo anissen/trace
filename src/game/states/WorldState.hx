@@ -807,8 +807,8 @@ class WorldState extends State {
     }
 
     function tutorial(id :String, entity :luxe.Entity, texts :Array<String>) {
-        // if (Luxe.io.string_load(id) != '') return Promise.resolve();
-        // Luxe.io.string_save(id, 'done');
+        if (Luxe.io.string_load(id) != null) return Promise.resolve();
+        Luxe.io.string_save(id, 'done');
 
         return promise_queue.handle({ id: id, entity: entity, texts: texts });
     }

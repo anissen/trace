@@ -162,6 +162,10 @@ class Main extends luxe.Game {
     }
 
     override function onkeyup(e :KeyEvent) {
+        if (e.keycode == Key.key_d && e.mod.alt) {
+            trace('Resetting tutorial');
+            Luxe.io.string_destroy();
+        }
         /*
         if (e.keycode == Key.enter && e.mod.alt) {
             fullscreen = !fullscreen;
