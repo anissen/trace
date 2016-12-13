@@ -236,6 +236,7 @@ class WorldState extends State {
     }
 
     override function onenter(_) {
+        Luxe.camera.center = new luxe.Vector();
         Luxe.camera.zoom = 0.1;
         luxe.tween.Actuate.tween(Luxe.camera, 0.5, { zoom: 1 });
 
@@ -330,7 +331,7 @@ class WorldState extends State {
     }
 
     function intro_tutorial() {
-        return tutorial('start-info', node_entities[start_node], ['Welcome to the hacking interface\n\n[Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the comprimised network', 'Your goal is to find and extract data\nfrom the master datastore']);
+        return tutorial('start-info', node_entities[start_node], ['Welcome to the hacking interface\n\n[Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network', 'Your goal is to find and extract data\nfrom the master datastore']);
 
         // var last_promise = Promise.resolve();
         // var linked_nodes = graph.get_edges_for_node(start_node);
@@ -590,6 +591,8 @@ class WorldState extends State {
     }
 
     override function onkeydown(event :luxe.Input.KeyEvent) {
+        if (tutorial_entity != null) return;
+
         if (event.keycode >= luxe.Input.Key.key_1 && event.keycode <= luxe.Input.Key.key_9) {
             var items = ((capture_node != null) ? capture_item_boxes : item_boxes);
             var index = switch (event.keycode) {
