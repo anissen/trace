@@ -112,8 +112,6 @@ class WorldState extends State {
     var tutorial_entity :luxe.Entity;
     var start_node :GraphNode;
 
-    var tutorial_queue :Array<Void->Promise>;
-
     var promise_queue :PromiseQueue<TutorialData>;
 
     #if with_shader
@@ -222,9 +220,11 @@ class WorldState extends State {
             entity.set_capture_text('?');
         }
 
-        // tutorial_queue.push(function() { return tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}']); });
         if (n.value == 'start') {
-            tutorial('node-type-start', entity, ['Welcome to the hacking interface\n\n[Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network', 'Your goal is to find and extract data\nfrom the master datastore']);
+            tutorial('node-type-start', entity, ['Welcome to the hacking interface\n\n[Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network', 'Your goal is to find and extract data\nfrom the master datastore']).then(function() {
+                paused = false;
+            });
+            tutorial('node-type-timer', entity, ['Time is running out...']);
         } else {
             tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}']);
         }
@@ -319,7 +319,6 @@ class WorldState extends State {
 
         countdownFunctions = [];
         tutorial_entity = null;
-        tutorial_queue = [];
 
         enemy_icon = null;
 
@@ -374,30 +373,17 @@ class WorldState extends State {
             detected(start_node);
         }, countdown);
 
-        paused = false;
+        paused = true;
     }
 
-    function intro_tutorial() {
-        tutorial('start-info', node_entities[start_node], ['Welcome to the hacking interface\n\n[Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network', 'Your goal is to find and extract data\nfrom the master datastore']);
-
-        // var linked_nodes = graph.get_edges_for_node(start_node);
-        // for (n in linked_nodes) {
-        //     if (node == null || !node_entities.exists(node)) continue;
-        //     var entity = node_entities[node];
-        //     last_promise = last_promise.then(function() {
-        //         return tutorial('node-type-$type', entity, ['This node is of type ${type.toUpperCase()}']);
-        //     });
-        // }
-
-        /* Tutorial TODO:
-        - node types
-        - how to capture nodes
-        - items
-        - the TRACE
-        - detection
-        - the timer
-        */
-    }
+    /* Tutorial TODO:
+    - node types
+    - how to capture nodes
+    - items
+    - the TRACE
+    - detection
+    - the timer
+    */
 
     override function onleave(_) {
         Luxe.scene.empty();
@@ -428,18 +414,6 @@ class WorldState extends State {
                     depth: 5
                 });
             }
-
-            // for (key in graph.get_keys_for_node(r.b)) {
-            //     if (!node_entities.exists(key)) continue;
-            //     Luxe.draw.line({
-            //         p0: node_entities[key].pos,
-            //         p1: node_entities[r.b].pos,
-            //         color0: new Color(0, 1, 0),
-            //         color1: new Color(1, 1, 1),
-            //         immediate: true,
-            //         depth: 5
-            //     });
-            // }
         }
 
         for (itembox in item_boxes) {
@@ -872,30 +846,8 @@ class WorldState extends State {
     function tutorial(id :String, entity :luxe.Entity, texts :Array<String>) {
         // if (Luxe.io.string_load(id) != '') return Promise.resolve();
         // Luxe.io.string_save(id, 'done');
+
         return promise_queue.handle({ id: id, entity: entity, texts: texts });
-        //
-        // return new Promise(function(resolve, reject) {
-        //     tutorial_entity = entity;
-        //     luxe.tween.Actuate.tween(Luxe, 0.3, { timescale: 0.1 });
-        //     var infobox = new game.entities.InfoBox({
-        //         depth: 1000,
-        //         duration: texts.length * 4,
-        //         scene: Luxe.scene,
-        //         texts: texts
-        //     });
-        //     infobox.get_promise().then(function() {
-        //         if (tutorial_queue.length > 0) {
-        //             var next_tutorial = tutorial_queue.shift();
-        //             return next_tutorial();
-        //         } else {
-        //             tutorial_entity = null;
-        //             luxe.tween.Actuate.tween(Luxe, 0.1, { timescale: 1.0 });
-        //             return Promise.resolve();
-        //         }
-        //     });
-        //     entity.add(infobox);
-        //     return infobox.get_promise();
-        // });
     }
 
     function detected(node :GraphNode) {
@@ -1104,15 +1056,4 @@ class WorldState extends State {
             return 3;
         }
     }
-
-    // function show_modal(text :String, callback :Void->Void) {
-    //     paused = true;
-    //     Main.states.enable(InfoState.StateId, {
-    //         text: text,
-    //         callback: function() {
-    //             paused = false;
-    //             callback();
-    //         }
-    //     });
-    // }
 }
