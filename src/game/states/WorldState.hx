@@ -20,6 +20,45 @@ using Lambda;
 
 typedef GraphNode = core.models.Graph.Node<String>;
 
+class PromiseQueue<T> {
+    var queue :List<T>;
+    var idle :Bool;
+    var handler :T->Promise;
+
+    public function new() {
+        queue = new List();
+        idle = true;
+    }
+
+    public function handle(element :T) {
+        queue.add(element);
+        if (idle) return handle_next_element();
+        return Promise.resolve();
+    }
+
+    public function set_handler(handler :T->Promise) {
+        this.handler = handler;
+    }
+
+    function handle_next_element() {
+        if (queue.isEmpty()) {
+            idle = true;
+            return Promise.resolve();
+        }
+        return handle_element(queue.pop());
+    }
+
+    function handle_element(element :T) {
+        if (handler == null) throw 'Handler not set!';
+        idle = false;
+        return handler(element)
+            .then(handle_next_element)
+            .error(function(e) { trace('Error: $e'); });
+    }
+}
+
+typedef TutorialData = { id: String, texts :Array<String>, entity :luxe.Entity };
+
 class WorldState extends State {
     static public var StateId :String = 'WorldState';
 
@@ -72,6 +111,10 @@ class WorldState extends State {
     var countdownFunctions :Array<{ time :Float, func :Void->Void }>;
     var tutorial_entity :luxe.Entity;
     var start_node :GraphNode;
+
+    var tutorial_queue :Array<Void->Promise>;
+
+    var promise_queue :PromiseQueue<TutorialData>;
 
     #if with_shader
     var circuits_sprite :Sprite;
@@ -179,7 +222,12 @@ class WorldState extends State {
             entity.set_capture_text('?');
         }
 
-        // tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}']);
+        // tutorial_queue.push(function() { return tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}']); });
+        if (n.value == 'start') {
+            tutorial('node-type-start', entity, ['Welcome to the hacking interface\n\n[Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network', 'Your goal is to find and extract data\nfrom the master datastore']);
+        } else {
+            tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}']);
+        }
 
         return entity;
     }
@@ -236,9 +284,11 @@ class WorldState extends State {
     }
 
     override function onenter(_) {
-        Luxe.camera.center = new luxe.Vector();
         Luxe.camera.zoom = 0.1;
         luxe.tween.Actuate.tween(Luxe.camera, 0.5, { zoom: 1 });
+
+        promise_queue = new PromiseQueue();
+        promise_queue.set_handler(tutorial_to_promise);
 
         overlay_filter = new Sprite({
             centered: false,
@@ -269,6 +319,7 @@ class WorldState extends State {
 
         countdownFunctions = [];
         tutorial_entity = null;
+        tutorial_queue = [];
 
         enemy_icon = null;
 
@@ -324,21 +375,13 @@ class WorldState extends State {
         }, countdown);
 
         paused = false;
-
-        delayed_function(function() {
-            intro_tutorial();
-        }, 0.5);
     }
 
     function intro_tutorial() {
-        return tutorial('start-info', node_entities[start_node], ['Welcome to the hacking interface\n\n[Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network', 'Your goal is to find and extract data\nfrom the master datastore']);
+        tutorial('start-info', node_entities[start_node], ['Welcome to the hacking interface\n\n[Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network', 'Your goal is to find and extract data\nfrom the master datastore']);
 
-        // var last_promise = Promise.resolve();
         // var linked_nodes = graph.get_edges_for_node(start_node);
-        // for (type in ['node', 'datastore' /* key, lock */]) {
-        //     var node = linked_nodes.find(function(n) {
-        //         return (n.value == type);
-        //     });
+        // for (n in linked_nodes) {
         //     if (node == null || !node_entities.exists(node)) continue;
         //     var entity = node_entities[node];
         //     last_promise = last_promise.then(function() {
@@ -809,26 +852,50 @@ class WorldState extends State {
         list.push(item);
     }
 
+    function tutorial_to_promise(data :TutorialData) {
+        tutorial_entity = data.entity;
+        luxe.tween.Actuate.tween(Luxe, 0.3, { timescale: 0.1 });
+        var infobox = new game.entities.InfoBox({
+            depth: 1000,
+            duration: data.texts.length * 4,
+            scene: Luxe.scene,
+            texts: data.texts
+        });
+        infobox.get_promise().then(function() {
+            tutorial_entity = null;
+            luxe.tween.Actuate.tween(Luxe, 0.1, { timescale: 1.0 });
+        });
+        data.entity.add(infobox);
+        return infobox.get_promise();
+    }
+
     function tutorial(id :String, entity :luxe.Entity, texts :Array<String>) {
         // if (Luxe.io.string_load(id) != '') return Promise.resolve();
         // Luxe.io.string_save(id, 'done');
-
-        return new Promise(function(resolve, reject) {
-            tutorial_entity = entity;
-            luxe.tween.Actuate.tween(Luxe, 0.3, { timescale: 0.1 });
-            var infobox = new game.entities.InfoBox({
-                depth: 1000,
-                duration: texts.length * 4,
-                scene: Luxe.scene,
-                texts: texts
-            });
-            infobox.get_promise().then(function() {
-                tutorial_entity = null;
-                luxe.tween.Actuate.tween(Luxe, 0.1, { timescale: 1.0 });
-            });
-            entity.add(infobox);
-            return infobox.get_promise();
-        });
+        return promise_queue.handle({ id: id, entity: entity, texts: texts });
+        //
+        // return new Promise(function(resolve, reject) {
+        //     tutorial_entity = entity;
+        //     luxe.tween.Actuate.tween(Luxe, 0.3, { timescale: 0.1 });
+        //     var infobox = new game.entities.InfoBox({
+        //         depth: 1000,
+        //         duration: texts.length * 4,
+        //         scene: Luxe.scene,
+        //         texts: texts
+        //     });
+        //     infobox.get_promise().then(function() {
+        //         if (tutorial_queue.length > 0) {
+        //             var next_tutorial = tutorial_queue.shift();
+        //             return next_tutorial();
+        //         } else {
+        //             tutorial_entity = null;
+        //             luxe.tween.Actuate.tween(Luxe, 0.1, { timescale: 1.0 });
+        //             return Promise.resolve();
+        //         }
+        //     });
+        //     entity.add(infobox);
+        //     return infobox.get_promise();
+        // });
     }
 
     function detected(node :GraphNode) {

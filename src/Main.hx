@@ -71,7 +71,6 @@ class Main extends luxe.Game {
 		// Luxe.camera.size = new luxe.Vector(960, 640);
 		// Luxe.camera.size_mode = luxe.Camera.SizeMode.cover;
 
-
         luxe.tween.Actuate.defaultEase = luxe.tween.easing.Quad.easeInOut;
 
         Luxe.renderer.batcher.on(prerender, function(_) { Luxe.renderer.state.lineWidth(4); });
@@ -118,11 +117,11 @@ class Main extends luxe.Game {
         // DC.registerFunction(function() { postprocess.toggle(); }, "toggle_shader");
         // DC.registerObject(Main, "Main");
 
-        var config = core.tools.JSONImporter.import_json('firebase-config.json');
-        var app = firebase.Firebase.initializeApp(config);
-        app.database().ref("test").set("wowser").then(function(e :String) {
-          trace("Set value!");
-        });
+        // var config = core.tools.JSONImporter.import_json('firebase-config.json');
+        // var app = firebase.Firebase.initializeApp(config);
+        // app.database().ref("test").set("wowser").then(function(e :String) {
+        //   trace("Set value!");
+        // });
     }
 
     // Scale camera's viewport accordingly when game is scaled, common and suitable for most games
@@ -131,13 +130,13 @@ class Main extends luxe.Game {
     // }
 
     override function onwindowresized(event :luxe.Screen.WindowEvent) {
-        trace('resized: $event');
+        // trace('resized: $event');
         // Luxe.camera.viewport = new luxe.Rectangle(0, 0, event.x, event.y);
         // if (postprocess != null) postprocess.shader.set_vector2('resolution', Luxe.screen.size.clone());
     }
 
     override function onwindowsized(event :luxe.Screen.WindowEvent) {
-        trace('sized: $event');
+        // trace('sized: $event');
         // Luxe.camera.size = new luxe.Vector(event.x, event.y);
         // Luxe.camera.viewport = new luxe.Rectangle(0, 0, event.x, event.y);
         // if (postprocess != null) {
@@ -163,10 +162,11 @@ class Main extends luxe.Game {
     }
 
     override function onkeyup(e :KeyEvent) {
+        /*
         if (e.keycode == Key.enter && e.mod.alt) {
             fullscreen = !fullscreen;
             Luxe.snow.runtime.window_fullscreen(fullscreen, true); // true for true-fullscreen
-        } /* else if (e.keycode == Key.key_s) {
+        } else if (e.keycode == Key.key_s) {
             // save state
             Luxe.io.string_save('save', 'blah test');
         } else if (e.keycode == Key.key_l) {
