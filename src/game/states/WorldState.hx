@@ -253,6 +253,18 @@ class WorldState extends State {
         promise_queue = new PromiseQueue();
         promise_queue.set_handler(tutorial_to_promise);
 
+        var bg_texture = Luxe.resources.texture('assets/images/background.png');
+        bg_texture.clamp_s = phoenix.Texture.ClampType.repeat;
+        bg_texture.clamp_t = phoenix.Texture.ClampType.repeat;
+        bg_texture.width = 3000;
+        bg_texture.height = 3000;
+        new Sprite({
+            texture: bg_texture,
+            // size: Vector.Multiply(Luxe.screen.size, 10),
+            color: new Color(0.5, 1, 0.5, 0.2),
+            depth: -100
+        });
+
         overlay_filter = new Sprite({
             centered: false,
             pos: new Vector(0, 0),
