@@ -188,7 +188,7 @@ class WorldState extends State {
                 paused = false;
             });
             tutorial('node-type-timer', entity, ['Time is running out...']);
-        } else {
+        } else if (n.value == 'node' || n.value == 'lock' || n.value == 'key' || n.value == 'datastore') {
             tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}']);
         }
 
@@ -248,7 +248,7 @@ class WorldState extends State {
 
     override function onenter(_) {
         Luxe.camera.zoom = 0.1;
-        luxe.tween.Actuate.tween(Luxe.camera, 0.5, { zoom: 1 });
+        luxe.tween.Actuate.tween(Luxe.camera, 0.7, { zoom: 1 });
 
         promise_queue = new PromiseQueue();
         promise_queue.set_handler(tutorial_to_promise);
@@ -832,7 +832,7 @@ class WorldState extends State {
         enemy_capture_node = node;
         enemy_capture_time = 10;
 
-        var detectionText = 'TRACE\nINITIATED!';
+        var detectionText = 'TRACE INITIATED!';
         if (countdown >= 0) {
             countdownText.color.tween(1, { g: 0, b: 0 }).onComplete(function(_) {
                 countdownText.color.tween(0.5, { b: 0.8 }).reflect().repeat();
