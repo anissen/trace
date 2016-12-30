@@ -1,19 +1,24 @@
 
 # To-do
 
+[ ] Name?
 [ ] Tutorial
-[ ] Menu
-[ ] Background image
-[ ] Better arrows (image + UV translation)
-[ ] One-way edges
-[ ] Improve graph variety
-[ ] High score
 [ ] Clean up unused assets
+[ ] Write a how-to-play text, including keys to reset tutorial, mute/unmute audio
+[ ] High score
+[ ] Analytics (https://github.com/SempaiGames/haxe-ga, https://github.com/anissen/hxGameAnalytics)
 
 Misc:
+[ ] Menu
+[ ] One-way edges
+[ ] Improve graph variety
 [ ] Make a player abstraction
 [ ] Put aux. data structures into Node
+[ ] Better arrows (image + UV translation)
 
+Bugs:
+[ ] Nuke can completely halt enemy (who is in game) if the capture node is nuked
+[ ] Audio is not looped ?!
 
 References:
 · Adventures In Level Design: http://www.jorisdormans.nl/pdf/dormans2010_AdventuresInLevelDesign.pdf
