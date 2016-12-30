@@ -139,6 +139,7 @@ class WorldState extends State {
         var detection = 10;
         var capture_time = 1.5;
         var texture = null;
+        var description = ['N/A'];
         switch (n.value) {
             case 'start':
                 texture = Luxe.resources.texture('assets/images/black-flag.png');
@@ -150,12 +151,17 @@ class WorldState extends State {
                 detection = 20;
                 capture_time = 3;
                 texture = Luxe.resources.texture('assets/images/database.png');
+                description = ['DATASTORES can be hacked to gain access to useful data.', 'One of the DATASTORES in the network\nholds the DATA you\'re after.', 'The other DATASTORES provide you\nwith useful abilities when hacked.', 'Be aware that DATASTORES are\nrisky and time consuming to hack.'];
             case 'node':
                 // default values
+                description = ['NODES are nondescript computers in the network.'];
             case 'lock':
+                detection = 5;
                 texture = Luxe.resources.texture('assets/images/finger-print.png');
+                description = ['LOCKS are nodes that require a user certificate to access.'];
             case 'key':
                 texture = Luxe.resources.texture('assets/images/id-card.png');
+                description = ['KEYS are nodes that contain a user\ncertificate for a specific LOCK', 'Once hacked, the corresponding LOCK will be accessible.'];
         }
 
         if (available_keys.length == 0) {
@@ -184,12 +190,12 @@ class WorldState extends State {
         }
 
         if (n.value == 'start') {
-            tutorial('node-type-start', entity, ['Welcome to the hacking interface\n\n[Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network', 'Your goal is to find and extract data\nfrom the master datastore']).then(function() {
+            tutorial('node-type-start', entity, ['Welcome to the hacking interface.\n\n  [Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network.', 'Your goal is to find and extract DATA\nfrom the master DATASTORE.', 'You hack nodes by holding down\nthe key shown on the node.']).then(function() {
                 paused = false;
             });
-            tutorial('node-type-timer', entity, ['Time is running out...']);
+            tutorial('node-type-timer', entity, ['You need to act swiftly!', 'When the timer runs out a TRACE will be initiated.', 'If you get caught by the TRACE you will get\nlocked out of the system and fail your mission.']);
         } else if (n.value == 'node' || n.value == 'lock' || n.value == 'key' || n.value == 'datastore') {
-            tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}']);
+            tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}'].concat(description));
         }
 
         return entity;
@@ -352,12 +358,8 @@ class WorldState extends State {
     }
 
     /* Tutorial TODO:
-    - node types
-    - how to capture nodes
     - items
     - the TRACE
-    - detection
-    - the timer
     */
 
     override function onleave(_) {
@@ -619,6 +621,8 @@ class WorldState extends State {
                 capture_time = (already_captured ? 0.2 : entity.capture_time);
                 capture_node = n;
 
+                tutorial('detection-risk', entity, ['Hacking a node involves a risk of detection.\nThe risk is shown in the node label.', 'If the breach is detected, a TRACE will\nbe initiated at the comprimised node.']);
+
                 var i = Luxe.utils.random.int(1, 3);
                 play_sound('click$i.wav');
                 return;
@@ -673,8 +677,8 @@ class WorldState extends State {
 
         if (current.value == 'goal' && !got_data) {
             got_data = true;
-            tutorial('data acquired', current_entity, ['DATA ACQUIRED']).then(function() {
-                tutorial('data acquired 2', node_entities[start_node], ['RETURN TO EXTRACTION NODE']).then(function() {
+            tutorial('data acquired', current_entity, ['DATA acquired!']).then(function() {
+                tutorial('data acquired 2', node_entities[start_node], ['Return to the EXTRACTION NODE.']).then(function() {
                     Notification.Toast({
                         text: 'DATA ACQUIRED\nRETURN TO EXTRACTION NODE',
                         color: new Color(1, 0, 1),
@@ -743,19 +747,19 @@ class WorldState extends State {
         var description = 'N/A';
         if (list == item_boxes) {
             item = switch (random.int(3)) {
-                case 0: description = 'increase the time it takes the TRACE\nto capture the node';
+                case 0: description = 'increase the time it takes the TRACE to\ncapture the node.';
                 new ItemBox({
                     item: 'Enforce',
                     texture: Luxe.resources.texture('assets/images/shieldcomb.png'),
                     index: index
                 });
-                case 1: description = 'lure the TRACE to capture the node';
+                case 1: description = 'lure the TRACE to capture the node.';
                 new ItemBox({
                     item: 'Honeypot',
                     texture: Luxe.resources.texture('assets/images/honeypot.png'),
                     index: index
                 });
-                case 2: description = 'take the node completely offline for\n20 seconds';
+                case 2: description = 'take the node completely offline for\n20 seconds.';
                 new ItemBox({
                     item: 'Nuke',
                     texture: Luxe.resources.texture('assets/images/mushroom-cloud.png'),
@@ -765,14 +769,14 @@ class WorldState extends State {
             }
         } else {
             item = switch (random.int(2)) {
-                case 0: description = 'reveal the network of the node';
+                case 0: description = 'reveal the network of the node.';
                 new ItemBox({
                     item: 'Scan',
                     texture: Luxe.resources.texture('assets/images/radar-sweep.png'),
                     inverted: true,
                     index: index
                 });
-                case 1: description = 'instantly capture the node without detection';
+                case 1: description = 'instantly capture the node without detection.';
                 new ItemBox({
                     item: 'Trojan',
                     texture: Luxe.resources.texture('assets/images/trojan-horse.png'),
@@ -787,8 +791,8 @@ class WorldState extends State {
 
         var item_name = item.item.toUpperCase();
 
-        tutorial(item.item, node_entities[current], ['$item_name ABILITY ACQUIRED', item_name + ' can be used ' + (item.inverted ? 'when capturing a node to\n' : 'on the active node to\n') + description]).then(function() {
-            tutorial('any_item_usage', node_entities[current], ['Items are used by pressing their\ncorresponding key (here ${index+1})']);
+        tutorial(item.item, node_entities[current], ['$item_name ability acquired.', item_name + ' can be used ' + (item.inverted ? 'when capturing a node to\n' : 'on the active node to\n') + description]).then(function() {
+            tutorial('any_item_usage', node_entities[current], ['Items are used by pressing their corresponding key.']);
         }).then(function() {
             Notification.Toast({
                 text: '$item_name ACQUIRED',
