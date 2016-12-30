@@ -1,4 +1,5 @@
-bin
+bin/mac*
+bin/web.build
 media
 asset_sources
 
