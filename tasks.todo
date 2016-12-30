@@ -2,13 +2,12 @@
 # To-do
 
 [ ] Name?
-[ ] Tutorial
 [ ] Clean up unused assets
-[ ] Write a how-to-play text, including keys to reset tutorial, mute/unmute audio
-[ ] High score
+[ ] Write a how-to-play text, including keys to reset tutorial, mute/unmute audio, credits
 [ ] Analytics (https://github.com/SempaiGames/haxe-ga, https://github.com/anissen/hxGameAnalytics)
 
 Misc:
+[ ] High score
 [ ] Menu
 [ ] One-way edges
 [ ] Improve graph variety
@@ -18,7 +17,6 @@ Misc:
 
 Bugs:
 [ ] Nuke can completely halt enemy (who is in game) if the capture node is nuked
-[ ] Audio is not looped ?!
 
 References:
 · Adventures In Level Design: http://www.jorisdormans.nl/pdf/dormans2010_AdventuresInLevelDesign.pdf

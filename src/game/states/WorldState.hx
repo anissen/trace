@@ -190,12 +190,12 @@ class WorldState extends State {
         }
 
         if (n.value == 'start') {
-            tutorial('node-type-start', entity, ['Welcome to the hacking interface.\n\n  [Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network.', 'Your goal is to find and extract DATA\nfrom the master DATASTORE.', 'You hack nodes by holding down\nthe key shown on the node.']).then(function() {
+            tutorial('node-type-start', entity, ['Welcome to the hacking interface.\n\n     [Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network.', 'Your goal is to find and extract DATA\nfrom the master DATASTORE.', 'You hack nodes by holding down\nthe key shown on the node.']).then(function() {
                 paused = false;
             });
             tutorial('node-type-timer', entity, ['You need to act swiftly!', 'When the timer runs out a TRACE will be initiated.', 'If you get caught by the TRACE you will get\nlocked out of the system and fail your mission.']);
         } else if (n.value == 'node' || n.value == 'lock' || n.value == 'key' || n.value == 'datastore') {
-            tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}'].concat(description));
+            tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}.'].concat(description));
         }
 
         return entity;
@@ -631,7 +631,7 @@ class WorldState extends State {
     }
 
     override function onkeyup(event :luxe.Input.KeyEvent) {
-        if (capture_node == null) return;
+        if (capture_node == null || tutorial_entity != null) return;
         switch (event.keycode) {
             case luxe.Input.Key.key_1: return;
             case luxe.Input.Key.key_2: return;
