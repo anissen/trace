@@ -49,7 +49,7 @@ class Main extends luxe.Game {
         config.preload.shaders.push({ id: 'circuits', frag_id: 'assets/shaders/circuits.glsl', vert_id: 'default' });
         #end
 
-        config.preload.sounds.push({ id: 'assets/music/tech_industry.ogg', is_stream: true });
+        // config.preload.sounds.push({ id: 'assets/music/tech_industry.ogg', is_stream: true });
 
         config.preload.sounds.push({ id: 'assets/sounds/alarm.wav', is_stream: false });
         config.preload.sounds.push({ id: 'assets/sounds/capture.wav', is_stream: false });
@@ -66,14 +66,30 @@ class Main extends luxe.Game {
         return config;
     }
 
+    function play_music(music) {
+        trace(music);
+        Luxe.audio.loop(music.source, 0.8);
+    }
+
     override function ready() {
         // Optional, set a consistent scale camera mode for the entire game
 		// this is a luxe's wip feature
 		// Luxe.camera.size = new luxe.Vector(960, 640);
 		// Luxe.camera.size_mode = luxe.Camera.SizeMode.cover;
 
+        Luxe.resources.load_audio('assets/music/tech_industry.ogg',  { is_stream: true }).then(play_music)
+            .error(function() {
+                trace('Cannot use OGG, trying with MP3');
+                Luxe.resources.load_audio('assets/music/tech_industry.mp3',  { is_stream: true })
+                    .then(play_music)
+                    .error(function() {
+                        trace('Your browser does not support Ogg Vorbis or MP3 so there\'s no music, sorry!');
+                    });
+            });
+
         luxe.tween.Actuate.defaultEase = luxe.tween.easing.Quad.easeInOut;
 
+        // Luxe.renderer.state.lineWidth(4);
         Luxe.renderer.batcher.on(prerender, function(_) { Luxe.renderer.state.lineWidth(4); });
         Luxe.renderer.batcher.on(postrender, function(_) { Luxe.renderer.state.lineWidth(1); });
 
@@ -91,8 +107,8 @@ class Main extends luxe.Game {
         states.add(new WorldState());
         states.set(MenuState.StateId);
 
-        var music = Luxe.resources.audio('assets/music/tech_industry.ogg');
-        Luxe.audio.loop(music.source, 0.8);
+        // var music = Luxe.resources.audio('assets/music/tech_industry.ogg');
+        // Luxe.audio.loop(music.source, 0.8);
 
         // var theme :pgr.dconsole.DCThemes.Theme = {
     	// 	CON_C 		: 0x353535,
