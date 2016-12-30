@@ -1,5 +1,6 @@
 bin
 media
+asset_sources
 
 *.DS_Store
 firebase-config.json

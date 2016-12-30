@@ -159,11 +159,4 @@ class InfoBox extends Component {
     public function get_promise() :Promise {
         return promise;
     }
-
-    // static public function ShowSequence(options :InfoBoxShowSequenceOptions) : {
-    //     var component = new InfoBox(options);
-    //     component.text = options.text;
-    //     Luxe.timer.schedule(options.duration, component.destroy);
-    //     return component;
-    // }
 }
