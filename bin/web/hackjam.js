@@ -396,7 +396,7 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		Luxe.resources.load_audio("assets/music/tech_industry.ogg",{ is_stream : true}).then($bind(this,this.play_music)).error(function() {
 			haxe_Log.trace("Cannot use OGG, trying with MP3",{ fileName : "/Users/nissen/code/snowkit/game-off-2016/src/Main.hx", lineNumber : 82, className : "Main", methodName : "ready"});
 			Luxe.resources.load_audio("assets/music/tech_industry.mp3",{ is_stream : true}).then($bind(_g,_g.play_music)).error(function() {
-				haxe_Log.trace("Cannot use MP3 either :(",{ fileName : "/Users/nissen/code/snowkit/game-off-2016/src/Main.hx", lineNumber : 86, className : "Main", methodName : "ready"});
+				haxe_Log.trace("Your browser does not support Ogg Vorbis or MP3 so there's no music, sorry!",{ fileName : "/Users/nissen/code/snowkit/game-off-2016/src/Main.hx", lineNumber : 86, className : "Main", methodName : "ready"});
 			});
 		});
 		luxe_tween_Actuate.defaultEase = luxe_tween_easing_Quad.get_easeInOut();
@@ -3803,7 +3803,7 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 				_g.paused = false;
 			});
 			this.tutorial("node-type-timer",entity,["You need to act swiftly!","When the timer runs out a TRACE will be initiated.","If you get caught by the TRACE you will get\nlocked out of the system and fail your mission."]);
-		} else if(n.value == "node" || n.value == "lock" || n.value == "key" || n.value == "datastore") this.tutorial("node-type-" + n.value,entity,["This node is of type " + n.value.toUpperCase()].concat(description));
+		} else if(n.value == "node" || n.value == "lock" || n.value == "key" || n.value == "datastore") this.tutorial("node-type-" + n.value,entity,["This node is of type " + n.value.toUpperCase() + "."].concat(description));
 		return entity;
 	}
 	,setup_particles: function() {
@@ -4255,7 +4255,7 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 		this.play_sound("pickup.wav");
 		var item_name = item.item.toUpperCase();
 		this.tutorial(item.item,this.node_entities.h[this.current.__id__],["" + item_name + " ability acquired.",item_name + " can be used " + (item.inverted?"when capturing a node to\n":"on the active node to\n") + description]).then(function() {
-			_g.tutorial("any_item_usage",_g.node_entities.h[_g.current.__id__],["Items are used by pressing their corresponding key."]);
+			_g.tutorial("any_item_usage",_g.node_entities.h[_g.current.__id__],["Abilities are used by pressing their corresponding key."]);
 		}).then(function() {
 			game_entities_Notification.Toast({ text : "" + item_name + " ACQUIRED", color : new phoenix_Color(1,0,1), pos : new phoenix_Vector(pos.x,pos.y - 120), duration : 8});
 		});
@@ -4285,14 +4285,16 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 		this.enemy_capture_node = node;
 		this.enemy_capture_time = 10;
 		var detectionText = "TRACE INITIATED!";
+		var tutorialTexts = ["A TRACE has been initiated at the EXTRACTION NODE"];
 		if(this.countdown >= 0) {
 			this.countdownText.color.tween(1,{ g : 0, b : 0}).onComplete(function(_) {
 				_g.countdownText.color.tween(0.5,{ b : 0.8}).reflect().repeat();
 			});
 			this.countdown = -1;
 			detectionText = "DETECTED!";
+			tutorialTexts = ["You have been detected!","A TRACE has been initiated at your location."];
 		}
-		this.tutorial("detected",this.node_entities.h[this.enemy_current.__id__],[detectionText,"Evade the TRACE at all costs!"]).then(function() {
+		this.tutorial("detected",this.node_entities.h[this.enemy_current.__id__],tutorialTexts.concat(["Once initiated, the TRACE will proceed to search the network.","Evade the TRACE and finish your mission!"])).then(function() {
 			game_entities_Notification.Toast({ text : detectionText, color : new phoenix_Color(1,0,0), pos : _g.node_entities.h[node.__id__].get_pos()});
 		});
 		this.play_sound("alarm.wav");

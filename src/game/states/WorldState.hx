@@ -792,7 +792,7 @@ class WorldState extends State {
         var item_name = item.item.toUpperCase();
 
         tutorial(item.item, node_entities[current], ['$item_name ability acquired.', item_name + ' can be used ' + (item.inverted ? 'when capturing a node to\n' : 'on the active node to\n') + description]).then(function() {
-            tutorial('any_item_usage', node_entities[current], ['Items are used by pressing their corresponding key.']);
+            tutorial('any_item_usage', node_entities[current], ['Abilities are used by pressing their corresponding key.']);
         }).then(function() {
             Notification.Toast({
                 text: '$item_name ACQUIRED',
@@ -837,14 +837,16 @@ class WorldState extends State {
         enemy_capture_time = 10;
 
         var detectionText = 'TRACE INITIATED!';
+        var tutorialTexts = ['A TRACE has been initiated at the EXTRACTION NODE'];
         if (countdown >= 0) {
             countdownText.color.tween(1, { g: 0, b: 0 }).onComplete(function(_) {
                 countdownText.color.tween(0.5, { b: 0.8 }).reflect().repeat();
             });
             countdown = -1;
             detectionText = 'DETECTED!';
+            tutorialTexts = ['You have been detected!', 'A TRACE has been initiated at your location.'];
         }
-        tutorial('detected', node_entities[enemy_current], [detectionText, 'Evade the TRACE at all costs!']).then(function() {
+        tutorial('detected', node_entities[enemy_current], tutorialTexts.concat(['Once initiated, the TRACE will proceed to search the network.', 'Evade the TRACE and finish your mission!'])).then(function() {
             Notification.Toast({
                 text: detectionText,
                 color: new Color(1, 0, 0),

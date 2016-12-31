@@ -1,12 +1,10 @@
 
 # To-do
-
-[ ] Name?
-[ ] Clean up unused assets
-[ ] Write a how-to-play text, including keys to reset tutorial, mute/unmute audio, credits
-[ ] Analytics (https://github.com/SempaiGames/haxe-ga, https://github.com/anissen/hxGameAnalytics)
+[ ] Submit to procjam
 
 Misc:
+[ ] Analytics (https://github.com/SempaiGames/haxe-ga, https://github.com/anissen/hxGameAnalytics)
+[ ] Clean up unused assets
 [ ] High score
 [ ] Menu
 [ ] One-way edges
