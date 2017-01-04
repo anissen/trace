@@ -1,7 +1,4 @@
 
-# To-do
-[ ] Submit to procjam
-
 Misc:
 [ ] Analytics (https://github.com/SempaiGames/haxe-ga, https://github.com/anissen/hxGameAnalytics)
 [ ] Clean up unused assets
@@ -14,7 +11,6 @@ Misc:
 [ ] Better arrows (image + UV translation)
 
 Bugs:
-[ ] Nuke can completely halt enemy (who is in game) if the capture node is nuked
 
 References:
 · Adventures In Level Design: http://www.jorisdormans.nl/pdf/dormans2010_AdventuresInLevelDesign.pdf

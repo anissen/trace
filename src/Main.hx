@@ -74,7 +74,7 @@ class Main extends luxe.Game {
     override function ready() {
         // Optional, set a consistent scale camera mode for the entire game
 		// this is a luxe's wip feature
-		// Luxe.camera.size = new luxe.Vector(960, 640);
+		Luxe.camera.size = new luxe.Vector(960, 640);
 		// Luxe.camera.size_mode = luxe.Camera.SizeMode.cover;
 
         Luxe.resources.load_audio('assets/music/tech_industry.ogg',  { is_stream: true }).then(play_music)

@@ -193,7 +193,7 @@ class WorldState extends State {
             tutorial('node-type-start', entity, ['Welcome to the hacking interface.\n\n     [Press <Enter> to continue]', 'Each node in the graph represents a\ncomputer in the network.', 'Your goal is to find and extract DATA\nfrom the master DATASTORE.', 'You hack nodes by holding down\nthe key shown on the node.']).then(function() {
                 paused = false;
             });
-            tutorial('node-type-timer', entity, ['You need to act swiftly!', 'When the timer runs out a TRACE will be initiated.', 'If you get caught by the TRACE you will get\nlocked out of the system and fail your mission.']);
+            tutorial('node-type-timer', entity, ['You need to act quickly!', 'When the timer runs out a TRACE will be initiated.', 'If you get caught by the TRACE you will get\nlocked out of the system and fail your mission.']);
         } else if (n.value == 'node' || n.value == 'lock' || n.value == 'key' || n.value == 'datastore') {
             tutorial('node-type-${n.value}', entity, ['This node is of type ${n.value.toUpperCase()}.'].concat(description));
         }
@@ -559,7 +559,12 @@ class WorldState extends State {
                         depth: 11
                     });
                     if (enemy_capture_node == current) {
-                        enemy_capture_node = null;
+                        if (!enemy_in_game) {
+                            enemy_capture_node = null;
+                        } else {
+                            enemy_capture_node = get_enemy_capture_node(enemy_current);
+                            enemy_capture_time = get_enemy_capture_time();
+                        }
                     }
                     var current_copy = current; // to ensure a local copy of current for the delayed function
                     delayed_function(function() {
@@ -575,7 +580,7 @@ class WorldState extends State {
                     delayed_function(function() {
                         entity.nuked(false);
                         nuked.remove(current_copy);
-                        if (!enemy_in_game && enemy_capture_node == null) {
+                        if (enemy_capture_node == null) {
                             enemy_capture_node = current_copy;
                             enemy_capture_time = get_enemy_capture_time();
                         }
@@ -587,7 +592,7 @@ class WorldState extends State {
     override function onkeydown(event :luxe.Input.KeyEvent) {
         if (tutorial_entity != null) return;
 
-        if (event.keycode >= luxe.Input.Key.key_1 && event.keycode <= luxe.Input.Key.key_9) {
+        if (event.keycode >= luxe.Input.Key.key_0 && event.keycode <= luxe.Input.Key.key_9) {
             var items = ((capture_node != null) ? capture_item_boxes : item_boxes);
             var index = switch (event.keycode) {
                 case luxe.Input.Key.key_1: 0;
@@ -982,7 +987,7 @@ class WorldState extends State {
 
                 play_sound('enemy_capture.wav');
 
-                enemy_capture_node = get_enemy_capture_node();
+                enemy_capture_node = get_enemy_capture_node(enemy_capture_node);
                 enemy_capture_time = get_enemy_capture_time();
             }
         }
@@ -995,8 +1000,8 @@ class WorldState extends State {
         }
     }
 
-    function get_enemy_capture_node() {
-        var links = graph.get_edges_for_node(enemy_capture_node);
+    function get_enemy_capture_node(from :GraphNode) {
+        var links = graph.get_edges_for_node(from);
         links = links.filter(function(n) {
             return (nuked.indexOf(n) < 0);
         });
