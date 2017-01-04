@@ -393,6 +393,7 @@ Main.prototype = $extend(luxe_Game.prototype,{
 	}
 	,ready: function() {
 		var _g = this;
+		Luxe.camera.set_size(new phoenix_Vector(960,640));
 		Luxe.resources.load_audio("assets/music/tech_industry.ogg",{ is_stream : true}).then($bind(this,this.play_music)).error(function() {
 			haxe_Log.trace("Cannot use OGG, trying with MP3",{ fileName : "/Users/nissen/code/snowkit/game-off-2016/src/Main.hx", lineNumber : 82, className : "Main", methodName : "ready"});
 			Luxe.resources.load_audio("assets/music/tech_industry.mp3",{ is_stream : true}).then($bind(_g,_g.play_music)).error(function() {
@@ -3802,7 +3803,7 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 			this.tutorial("node-type-start",entity,["Welcome to the hacking interface.\n\n     [Press <Enter> to continue]","Each node in the graph represents a\ncomputer in the network.","Your goal is to find and extract DATA\nfrom the master DATASTORE.","You hack nodes by holding down\nthe key shown on the node."]).then(function() {
 				_g.paused = false;
 			});
-			this.tutorial("node-type-timer",entity,["You need to act swiftly!","When the timer runs out a TRACE will be initiated.","If you get caught by the TRACE you will get\nlocked out of the system and fail your mission."]);
+			this.tutorial("node-type-timer",entity,["You need to act quickly!","When the timer runs out a TRACE will be initiated.","If you get caught by the TRACE you will get\nlocked out of the system and fail your mission."]);
 		} else if(n.value == "node" || n.value == "lock" || n.value == "key" || n.value == "datastore") this.tutorial("node-type-" + n.value,entity,["This node is of type " + n.value.toUpperCase() + "."].concat(description));
 		return entity;
 	}
@@ -4020,7 +4021,12 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 				this.nuked.push(this.current);
 				entity2.nuked(true);
 				var nukeSprite = new luxe_Sprite({ texture : Luxe.resources.cache.get("assets/images/mushroom-cloud.png"), scale : new phoenix_Vector(0.35,0.35), color : new phoenix_Color(1,0,0), parent : entity2, depth : 11});
-				if(this.enemy_capture_node == this.current) this.enemy_capture_node = null;
+				if(this.enemy_capture_node == this.current) {
+					if(!this.enemy_in_game) this.enemy_capture_node = null; else {
+						this.enemy_capture_node = this.get_enemy_capture_node(this.enemy_current);
+						this.enemy_capture_time = this.get_enemy_capture_time();
+					}
+				}
 				var current_copy = this.current;
 				this.delayed_function(function() {
 					nukeSprite.destroy();
@@ -4035,7 +4041,7 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 				this.delayed_function(function() {
 					entity2.nuked(false);
 					HxOverrides.remove(_g.nuked,current_copy);
-					if(!_g.enemy_in_game && _g.enemy_capture_node == null) {
+					if(_g.enemy_capture_node == null) {
 						_g.enemy_capture_node = current_copy;
 						_g.enemy_capture_time = _g.get_enemy_capture_time();
 					}
@@ -4046,7 +4052,7 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 	}
 	,onkeydown: function(event) {
 		if(this.tutorial_entity != null) return;
-		if(event.keycode >= 49 && event.keycode <= 57) {
+		if(event.keycode >= 48 && event.keycode <= 57) {
 			var items;
 			if(this.capture_node != null) items = this.capture_item_boxes; else items = this.item_boxes;
 			var index;
@@ -4201,7 +4207,6 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 	,gain_random_item: function(pos) {
 		var _g = this;
 		var list = this.item_boxes;
-		if(this.random.bool(null)) list = this.capture_item_boxes;
 		if(list.length >= 4) {
 			game_entities_Notification.Toast({ text : "CAPACITY FULL", color : new phoenix_Color(1,0,1), pos : new phoenix_Vector(pos.x,pos.y - 120), duration : 8});
 			return;
@@ -4252,6 +4257,8 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 				throw new js__$Boot_HaxeError("Error");
 			}
 		}
+		haxe_Log.trace("got nuke",{ fileName : "/Users/nissen/code/snowkit/game-off-2016/src/game/states/WorldState.hx", lineNumber : 794, className : "game.states.WorldState", methodName : "gain_random_item"});
+		item = new game_entities_ItemBox({ item : "Nuke", texture : Luxe.resources.cache.get("assets/images/mushroom-cloud.png"), index : index});
 		this.play_sound("pickup.wav");
 		var item_name = item.item.toUpperCase();
 		this.tutorial(item.item,this.node_entities.h[this.current.__id__],["" + item_name + " ability acquired.",item_name + " can be used " + (item.inverted?"when capturing a node to\n":"on the active node to\n") + description]).then(function() {
@@ -4393,7 +4400,7 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 				this.enemy_captured_nodes.push(this.enemy_capture_node);
 				HxOverrides.remove(this.honeypots,this.enemy_capture_node);
 				this.play_sound("enemy_capture.wav");
-				this.enemy_capture_node = this.get_enemy_capture_node();
+				this.enemy_capture_node = this.get_enemy_capture_node(this.enemy_capture_node);
 				this.enemy_capture_time = this.get_enemy_capture_time();
 			}
 		}
@@ -4404,9 +4411,9 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 			}
 		}
 	}
-	,get_enemy_capture_node: function() {
+	,get_enemy_capture_node: function(from) {
 		var _g = this;
-		var links = this.graph.get_edges_for_node(this.enemy_capture_node);
+		var links = this.graph.get_edges_for_node(from);
 		links = links.filter(function(n1) {
 			return HxOverrides.indexOf(_g.nuked,n1,0) < 0;
 		});
@@ -27155,7 +27162,7 @@ snow_systems_input_Scancodes.app2 = 284;
 snow_systems_input_Scancodes.scancode_names = [null,null,null,null,"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0","Enter","Escape","Backspace","Tab","Space","-","=","[","]","\\","#",";","'","`",",",".","/","CapsLock","F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12","PrintScreen","ScrollLock","Pause","Insert","Home","PageUp","Delete","End","PageDown","Right","Left","Down","Up","Numlock","Keypad /","Keypad *","Keypad -","Keypad +","Keypad Enter","Keypad 1","Keypad 2","Keypad 3","Keypad 4","Keypad 5","Keypad 6","Keypad 7","Keypad 8","Keypad 9","Keypad 0","Keypad .",null,"Application","Power","Keypad =","F13","F14","F15","F16","F17","F18","F19","F20","F21","F22","F23","F24","Execute","Help","Menu","Select","Stop","Again","Undo","Cut","Copy","Paste","Find","Mute","VolumeUp","VolumeDown",null,null,null,"Keypad ,","Keypad = (AS400)",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"AltErase","SysReq","Cancel","Clear","Prior","Enter","Separator","Out","Oper","Clear / Again","CrSel","ExSel",null,null,null,null,null,null,null,null,null,null,null,"Keypad 00","Keypad 000","ThousandsSeparator","DecimalSeparator","CurrencyUnit","CurrencySubUnit","Keypad (","Keypad )","Keypad {","Keypad }","Keypad Tab","Keypad Backspace","Keypad A","Keypad B","Keypad C","Keypad D","Keypad E","Keypad F","Keypad XOR","Keypad ^","Keypad %","Keypad <","Keypad >","Keypad &","Keypad &&","Keypad |","Keypad ||","Keypad :","Keypad #","Keypad Space","Keypad @","Keypad !","Keypad MemStore","Keypad MemRecall","Keypad MemClear","Keypad MemAdd","Keypad MemSubtract","Keypad MemMultiply","Keypad MemDivide","Keypad +/-","Keypad Clear","Keypad ClearEntry","Keypad Binary","Keypad Octal","Keypad Decimal","Keypad Hexadecimal",null,null,"Left Ctrl","Left Shift","Left Alt","Left Meta","Right Ctrl","Right Shift","Right Alt","Right Meta",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"ModeSwitch","AudioNext","AudioPrev","AudioStop","AudioPlay","AudioMute","MediaSelect","WWW","Mail","Calculator","Computer","AC Search","AC Home","AC Back","AC Forward","AC Stop","AC Refresh","AC Bookmarks","BrightnessDown","BrightnessUp","DisplaySwitch","KBDIllumToggle","KBDIllumDown","KBDIllumUp","Eject","Sleep"];
 snow_types_Config.app_runtime = "snow.core.web.Runtime";
 snow_types_Config.app_config = "config.json";
-snow_types_Config.app_ident = "com.andersnissen.hackjam";
+snow_types_Config.app_ident = "com.andersnissen.trace";
 snow_types_Config.app_main = "luxe.Engine";
 snow_types_Config.module_assets = "snow.core.web.assets.Assets";
 snow_types_Config.module_audio = "snow.modules.webaudio.Audio";

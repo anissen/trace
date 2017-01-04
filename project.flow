@@ -1,7 +1,7 @@
 {
     luxe:{
         window: {
-            title: 'hackjam',
+            title: 'trace',
             width: 960,
             height: 640,
             fullscreen: false,
@@ -11,13 +11,13 @@
     },
 
     project : {
-        name : 'hackjam',
+        name : 'trace',
         version : '0.1.0',
         author : 'Anders Nissen',
 
         app : {
-            name : 'hackjam',
-            package : 'com.andersnissen.hackjam',
+            name : 'trace',
+            package : 'com.andersnissen.trace',
             main : 'Main',
             mobile: {
                 orientation: 'portrait'
