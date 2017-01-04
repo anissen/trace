@@ -4207,6 +4207,7 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 	,gain_random_item: function(pos) {
 		var _g = this;
 		var list = this.item_boxes;
+		if(this.random.bool(null)) list = this.capture_item_boxes;
 		if(list.length >= 4) {
 			game_entities_Notification.Toast({ text : "CAPACITY FULL", color : new phoenix_Color(1,0,1), pos : new phoenix_Vector(pos.x,pos.y - 120), duration : 8});
 			return;
@@ -4257,8 +4258,6 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 				throw new js__$Boot_HaxeError("Error");
 			}
 		}
-		haxe_Log.trace("got nuke",{ fileName : "/Users/nissen/code/snowkit/game-off-2016/src/game/states/WorldState.hx", lineNumber : 794, className : "game.states.WorldState", methodName : "gain_random_item"});
-		item = new game_entities_ItemBox({ item : "Nuke", texture : Luxe.resources.cache.get("assets/images/mushroom-cloud.png"), index : index});
 		this.play_sound("pickup.wav");
 		var item_name = item.item.toUpperCase();
 		this.tutorial(item.item,this.node_entities.h[this.current.__id__],["" + item_name + " ability acquired.",item_name + " can be used " + (item.inverted?"when capturing a node to\n":"on the active node to\n") + description]).then(function() {
