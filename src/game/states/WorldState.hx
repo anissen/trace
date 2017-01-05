@@ -480,6 +480,7 @@ class WorldState extends State {
         for (n in node_entities.keys()) {
             var p = nodes[n];
             var entity = node_entities[n];
+            entity.color.a = (current_linked_nodes.indexOf(n) == -1 ? 0.5 : 1.0);
             entity.pos.x = p.position.x;
             entity.pos.y = p.position.y;
         }

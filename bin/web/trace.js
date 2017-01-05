@@ -3961,6 +3961,7 @@ game_states_WorldState.prototype = $extend(luxe_State.prototype,{
 			var n = $it0.next();
 			var p4 = this.nodes.h[n.__id__];
 			var entity = this.node_entities.h[n.__id__];
+			if(HxOverrides.indexOf(current_linked_nodes,n,0) == -1) entity.color.a = 0.5; else entity.color.a = 1.0;
 			entity.get_pos().set_x(p4.position.x);
 			entity.get_pos().set_y(p4.position.y);
 		}
